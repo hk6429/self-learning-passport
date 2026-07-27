@@ -3,7 +3,7 @@
 - 日期：2026-07-27
 - 規格：`docs/superpowers/specs/2026-07-27-self-learning-passport-yaoguai-design.md`
 - 生產模式：`imagegen` built-in tool
-- 狀態：Batch 0、Batch 1 已核准；Batch 2 三域身份錨點已完成，等待確認
+- 狀態：Batch 0、Batch 1 已核准；Batch 2 三域狀態圖已完成，等待整組確認
 
 ## 1. 目標
 
@@ -158,7 +158,11 @@ assets/
 - 墨蛛小七：X 形絨蛛肢、七枚朱墨珠、字網竹框。
 - 青角小牛妖：青玉雙角與金環、奶白牛鼻、風語葉笛。
 - 負碑小龜妖：低圓龜甲、六角金環甲紋、三環算陣石碑。
-- 三者均通過 96px 剪影差異 gate，等待使用者確認後才展開狀態圖。
+- 三者均通過 96px 剪影差異 gate。
+- 身份錨點核准後，三位角色的 `focus`、`celebrate`、`recover`、`avatar` 已完成。
+- 每位完整狀態皆提供 256、512、1024px WebP；頭像提供 128、256px WebP。
+- 三域正式 WebP 合計 1.3MiB；1024px 單張為 51–96KiB，均低於 120KB 目標。
+- 每個狀態皆有精準 alt 與圖片失效 fallback，並已登錄 `assets/manifest.json`。
 
 本批角色：
 
