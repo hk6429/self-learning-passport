@@ -3,7 +3,7 @@
 - 日期：2026-07-27
 - 規格：`docs/superpowers/specs/2026-07-27-self-learning-passport-yaoguai-design.md`
 - 生產模式：`imagegen` built-in tool
-- 狀態：等待依實作節點執行
+- 狀態：Batch 0 已核准；Batch 1 墨尾四狀態已完成，等待整組確認
 
 ## 1. 目標
 
@@ -94,6 +94,12 @@ assets/
 
 ### Batch 0：風格錨點
 
+**2026-07-27 結果：已核准**
+
+- 使用者選擇 B「加強小妖獸感」。
+- 正式錨點為 `assets/references/style-anchor.webp`。
+- 墨尾行者固定為圓猴耳、雙墨筆尾與無文字雙向木路籤。
+
 先生成三張預覽，不接入網站：
 
 1. 藝術風格板：一位原創小妖＋妖山＋宣紙卡片氣氛。
@@ -111,6 +117,14 @@ assets/
 使用者確認風格錨點後才進 Batch 1。
 
 ### Batch 1：主角墨尾行者
+
+**2026-07-27 結果：四狀態已完成**
+
+- `idle`、`focus`、`celebrate`、`recover` 已生成並通過角色一致性 gate。
+- `recover` 第一版因尾巴拓樸漂移退件，正式版為修正後的雙尾低喚醒坐姿。
+- 每個狀態已提供 256、512、1024px WebP。
+- 正式 1024px 單張為 65–76KiB，均低於 250KB 預算。
+- 正式路徑與狀態文字已接入角色目錄；退件稿與來源 PNG 不進 bundle。
 
 資產：
 
