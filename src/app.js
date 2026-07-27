@@ -1,4 +1,5 @@
 import { buildHomeState } from "./domain/home-state.js";
+import { getPlatformsForRole } from "./domain/platform-guide.js";
 import { getReturnVoyage, getSevenLights } from "./domain/progress.js";
 import { selectRoleInterface } from "./ui/router.js";
 import { createRealmCard } from "./ui/realm-card.js";
@@ -19,6 +20,13 @@ const SUBJECT_SITE_IDS = Object.freeze({
   language: "zizizhuji",
   english: "vocab-duel",
   math: "bxws-math",
+});
+
+const PLATFORM_GROUP_LABELS = Object.freeze({
+  language: "墨海文域",
+  leadership: "煉心妖境",
+  stem: "星火術域",
+  teacher: "引路仙門",
 });
 
 function node(tagName, { className = "", text = "", attributes = {} } = {}) {
@@ -272,7 +280,7 @@ function createRoleNotice(activeRole) {
       eyebrow: "守燈人",
       title: "看見穩定投入，也尊重孩子的步調",
       description:
-        "守燈觀星卷只讀取同一裝置的七日旅記。你可以留下鼓勵，但不會改寫孩子的完成紀錄。",
+        "先依孩子今天的心力與興趣，陪他挑一個走得動的入口。每天做一點就好；家長負責守燈，不替孩子追趕。",
     },
   }[activeRole];
   if (!content) return null;
@@ -290,6 +298,102 @@ function createRoleNotice(activeRole) {
     node("p", { text: content.description }),
   );
   return notice;
+}
+
+function createPlatformCard(platform) {
+  const link = node("a", {
+    className: "platform-card",
+    attributes: {
+      href: platform.url,
+      "aria-label": `開新分頁前往${platform.title}：${platform.caption}`,
+      "data-platform-id": platform.id,
+    },
+  });
+  link.target = "_blank";
+  link.rel = "noopener noreferrer";
+
+  const top = node("div", { className: "platform-card__top" });
+  top.append(
+    node("span", {
+      className: `platform-seal platform-seal--${platform.group}`,
+      text: PLATFORM_GROUP_LABELS[platform.group] ?? "支線妖境",
+    }),
+    node("span", {
+      className: "platform-arrow",
+      text: "↗",
+      attributes: { "aria-hidden": "true" },
+    }),
+  );
+
+  const tags = node("div", { className: "platform-tags" });
+  for (const text of [platform.stage, platform.mode, platform.duration]) {
+    tags.append(node("span", { text }));
+  }
+
+  link.append(
+    top,
+    node("p", { className: "platform-subject", text: platform.subject }),
+    node("h3", { text: platform.title }),
+    node("strong", { className: "platform-caption", text: platform.caption }),
+    node("p", {
+      className: "platform-description",
+      text: platform.description,
+    }),
+    tags,
+  );
+  return link;
+}
+
+function createPlatformSection(activeRole, { includeCore = false } = {}) {
+  const platforms = getPlatformsForRole(activeRole, { includeCore });
+  const content = {
+    student: {
+      eyebrow: "支線妖境",
+      title: "還有更多世界，等你照興趣探路",
+      description:
+        "三座主域之外，閱讀、文言、自然與自我領導力也都能成為今天的一小步。",
+    },
+    teacher: {
+      eyebrow: "完整站群",
+      title: "把十二個非會考平台帶進教學現場",
+      description:
+        "上方三座主域適合每日任務；下方支線涵蓋閱讀、文學、七個習慣與教師專業成長。",
+    },
+    parent: {
+      eyebrow: "親子選路",
+      title: "替孩子選一條今天願意開始的路",
+      description:
+        "這裡整理十個適合孩子的非會考平台。先看興趣，再看年段與時間，不必一次做完。",
+    },
+  }[activeRole];
+
+  const section = node("section", {
+    className: `platform-section platform-section--${activeRole}`,
+    attributes: { "aria-labelledby": `${activeRole}-platform-heading` },
+  });
+  const heading = node("header", { className: "section-heading" });
+  const titleWrap = node("div");
+  titleWrap.append(
+    node("p", {
+      className: "eyebrow",
+      text: `${content.eyebrow}・${platforms.length} 道入口`,
+    }),
+    node("h2", {
+      text: content.title,
+      attributes: { id: `${activeRole}-platform-heading` },
+    }),
+  );
+  heading.append(
+    titleWrap,
+    node("p", { text: content.description }),
+  );
+
+  const grid = node("div", { className: "platform-grid" });
+  for (const platform of platforms) {
+    grid.append(createPlatformCard(platform));
+  }
+  section.append(heading, grid);
+  return section;
 }
 
 function createRealmSection(home, activeRole) {
@@ -460,11 +564,20 @@ function render() {
       ),
       createRestorativeBanner(home, mission),
       createRealmSection(home, activeRole),
+      createPlatformSection(activeRole),
     );
   } else {
     shell.append(createRoleNotice(activeRole));
     if (activeRole === "teacher") {
-      shell.append(createRealmSection(home, activeRole));
+      shell.append(
+        createRealmSection(home, activeRole),
+        createPlatformSection(activeRole),
+      );
+    }
+    if (activeRole === "parent") {
+      shell.append(
+        createPlatformSection(activeRole, { includeCore: true }),
+      );
     }
   }
   shell.append(createProgressDock());

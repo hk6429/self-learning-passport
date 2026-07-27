@@ -221,13 +221,20 @@ img {
 
 .map-stage {
   display: grid;
-  grid-template-columns: minmax(0, 1fr) minmax(210px, 0.62fr);
+  grid-template-columns: minmax(0, 1fr) minmax(190px, 0.72fr);
   align-items: center;
+  gap: 18px;
   padding: clamp(28px, 5vw, 64px);
   border: 1px solid rgba(255, 248, 232, 0.12);
   background:
     radial-gradient(circle at 75% 35%, rgba(243, 183, 67, 0.18), transparent 24%),
     linear-gradient(145deg, rgba(141, 108, 203, 0.3), rgba(21, 21, 43, 0.45));
+}
+
+.map-stage > div:first-child {
+  position: relative;
+  z-index: 2;
+  min-width: 0;
 }
 
 .map-stage::after {
@@ -257,8 +264,8 @@ img {
   max-width: 11ch;
   margin: 0;
   font-family: ui-serif, "Noto Serif TC", serif;
-  font-size: clamp(2.65rem, 5vw, 5.2rem);
-  line-height: 0.98;
+  font-size: clamp(2.5rem, 4.4vw, 4.6rem);
+  line-height: 1.02;
   letter-spacing: -0.05em;
 }
 
@@ -274,11 +281,14 @@ img {
   position: relative;
   z-index: 1;
   align-self: end;
-  margin: 0 -12% -13% -18%;
+  justify-self: end;
+  width: 100%;
+  max-width: 300px;
+  margin: 0;
 }
 
 .guide-figure img {
-  width: min(100%, 360px);
+  width: 100%;
   margin-inline: auto;
   filter: drop-shadow(0 28px 26px rgba(4, 4, 18, 0.42));
   animation: guide-float 7s ease-in-out infinite;
@@ -444,7 +454,8 @@ img {
   cursor: pointer;
 }
 
-.realm-section {
+.realm-section,
+.platform-section {
   margin-top: 76px;
 }
 
@@ -474,6 +485,121 @@ img {
   display: grid;
   grid-template-columns: repeat(3, minmax(0, 1fr));
   gap: 18px;
+}
+
+.platform-grid {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 16px;
+}
+
+.platform-card {
+  --platform-accent: var(--purple);
+  position: relative;
+  display: flex;
+  min-width: 0;
+  min-height: 315px;
+  flex-direction: column;
+  padding: 22px;
+  border: 1px solid rgba(255, 248, 232, 0.13);
+  border-radius: 25px;
+  color: var(--mist);
+  background:
+    radial-gradient(circle at 100% 0%, color-mix(in srgb, var(--platform-accent) 24%, transparent), transparent 38%),
+    linear-gradient(150deg, rgba(255, 255, 255, 0.085), rgba(255, 255, 255, 0.03));
+  box-shadow: 0 16px 38px rgba(5, 5, 20, 0.19);
+  text-decoration: none;
+  transition:
+    border-color 180ms ease,
+    transform 180ms ease,
+    box-shadow 180ms ease;
+}
+
+.platform-card:hover {
+  border-color: color-mix(in srgb, var(--platform-accent) 62%, white);
+  transform: translateY(-4px);
+  box-shadow: 0 22px 44px rgba(5, 5, 20, 0.28);
+}
+
+.platform-card:has(.platform-seal--language) {
+  --platform-accent: var(--red);
+}
+
+.platform-card:has(.platform-seal--leadership) {
+  --platform-accent: var(--gold);
+}
+
+.platform-card:has(.platform-seal--stem) {
+  --platform-accent: var(--blue);
+}
+
+.platform-card:has(.platform-seal--teacher) {
+  --platform-accent: var(--green);
+}
+
+.platform-card__top {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+}
+
+.platform-seal {
+  padding: 6px 10px;
+  border: 1px solid color-mix(in srgb, var(--platform-accent) 58%, transparent);
+  border-radius: 999px;
+  color: color-mix(in srgb, var(--platform-accent) 76%, white);
+  background: color-mix(in srgb, var(--platform-accent) 13%, transparent);
+  font-size: 0.74rem;
+  font-weight: 800;
+  letter-spacing: 0.08em;
+}
+
+.platform-arrow {
+  color: var(--gold);
+  font-size: 1.15rem;
+}
+
+.platform-subject {
+  margin: 24px 0 7px;
+  color: var(--muted);
+  font-size: 0.78rem;
+  font-weight: 700;
+}
+
+.platform-card h3 {
+  margin: 0;
+  font-family: ui-serif, "Noto Serif TC", serif;
+  font-size: 1.65rem;
+}
+
+.platform-caption {
+  margin-top: 6px;
+  color: color-mix(in srgb, var(--platform-accent) 62%, white);
+  font-size: 0.9rem;
+}
+
+.platform-description {
+  margin: 16px 0 22px;
+  color: #cdc5d5;
+  font-size: 0.9rem;
+  line-height: 1.7;
+}
+
+.platform-tags {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+  margin-top: auto;
+}
+
+.platform-tags span {
+  padding: 5px 8px;
+  border: 1px solid rgba(255, 248, 232, 0.12);
+  border-radius: 999px;
+  color: var(--muted);
+  background: rgba(5, 5, 20, 0.18);
+  font-size: 0.72rem;
 }
 
 .realm-card {
@@ -648,6 +774,7 @@ img {
 .focus-mode .guide-figure,
 .focus-mode .map-stage,
 .focus-mode .realm-section,
+.focus-mode .platform-section,
 .focus-mode .section-heading p,
 .focus-mode .brand-copy span {
   display: none;
@@ -691,6 +818,10 @@ img {
 
   .realm-grid {
     grid-template-columns: 1fr;
+  }
+
+  .platform-grid {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
   }
 
   .realm-card {
@@ -759,8 +890,8 @@ img {
   }
 
   .map-stage {
-    min-height: 330px;
-    grid-template-columns: minmax(0, 1fr) 132px;
+    min-height: auto;
+    grid-template-columns: 1fr;
     padding: 25px 22px;
     border-radius: 24px;
   }
@@ -776,11 +907,12 @@ img {
   }
 
   .guide-figure {
-    margin: 0 -38% -30% -30%;
+    width: min(58vw, 220px);
+    margin: 0;
   }
 
   .guide-figure img {
-    max-height: 28svh;
+    max-height: none;
   }
 
   .restorative-banner {
@@ -791,7 +923,8 @@ img {
     grid-column: 1 / -1;
   }
 
-  .realm-section {
+  .realm-section,
+  .platform-section {
     margin-top: 50px;
   }
 
@@ -804,6 +937,16 @@ img {
     display: block;
     padding: 18px;
     border-radius: 23px;
+  }
+
+  .platform-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .platform-card {
+    min-height: 0;
+    padding: 19px;
+    border-radius: 22px;
   }
 
   .realm-character,
