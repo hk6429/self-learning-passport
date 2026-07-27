@@ -20,6 +20,8 @@ export function createDefaultState() {
       missionHistory: {},
       passport: {
         sealId: "ink-tail",
+        featuredRelicId: null,
+        featuredBadgeId: null,
       },
       encouragement: {
         message: "",

@@ -93,6 +93,7 @@ test("複利護照把任務足跡換成習光、等級、妖印與下一個稀�
         durationMinutes: 5,
         status: "complete",
         revealId: "ink-cave-first-thread-reveal",
+        occurredAt: "2026-07-25T12:00:00.000Z",
       },
     ],
     "2026-07-26": [
@@ -103,6 +104,7 @@ test("複利護照把任務足跡換成習光、等級、妖印與下一個稀�
         status: "partial",
         strategy: "shorter",
         revealId: "wind-valley-first-leaf-reveal",
+        occurredAt: "2026-07-26T12:00:00.000Z",
       },
     ],
   };
@@ -116,8 +118,45 @@ test("複利護照把任務足跡換成習光、等級、妖印與下一個稀�
   assert.equal(snapshot.northStarLabel, "養成每天一小步");
   assert.equal(snapshot.seal.label, "墨尾妖印");
   assert.equal(snapshot.reveals.length, 2);
+  assert.ok(snapshot.unlockedRelics.some(({ id }) => id === "mist-compass"));
   assert.equal(snapshot.nextRelic.unlockAt, 60);
   assert.equal(snapshot.nextRelic.remainingXp, 23);
+  assert.equal(snapshot.nextRelic.progressXp, 37);
+  assert.equal(snapshot.collection.length >= 5, true);
+  assert.equal(snapshot.recentHistory.length, 2);
+  assert.ok(
+    snapshot.collection.every(
+      ({ rarity, realm, story, art }) => rarity && realm && story && art,
+    ),
+  );
   assert.ok(snapshot.badges.some(({ id }) => id === "first-step"));
   assert.ok(snapshot.badges.some(({ id }) => id === "strategy-maker"));
+});
+
+test("只能把已解鎖收藏與徽章設為護照代表，並保留取得日期", () => {
+  const student = createDefaultState().student;
+  student.passport.featuredRelicId = "mist-compass";
+  student.passport.featuredBadgeId = "first-step";
+  student.missionHistory = {
+    "2026-07-25": [
+      {
+        missionId: "ink-cave-first-thread",
+        siteId: "zizizhuji",
+        durationMinutes: 15,
+        status: "complete",
+        occurredAt: "2026-07-25T12:00:00.000Z",
+      },
+    ],
+  };
+
+  const unlocked = buildPassportSnapshot(student);
+  assert.equal(unlocked.featuredRelic?.id, "mist-compass");
+  assert.equal(unlocked.featuredRelic?.acquiredAt, "2026-07-25T12:00:00.000Z");
+  assert.equal(unlocked.featuredBadge?.id, "first-step");
+
+  student.passport.featuredRelicId = "seven-realm-scroll";
+  student.passport.featuredBadgeId = "seven-lights";
+  const locked = buildPassportSnapshot(student);
+  assert.equal(locked.featuredRelic?.id, "mist-compass");
+  assert.equal(locked.featuredBadge?.id, "first-step");
 });

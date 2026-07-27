@@ -134,3 +134,23 @@ test("回訪身份選擇與七燈計數器可收合，首訪提供白話詞語�
   assert.match(styles, /\.progress-dock\[data-expanded="true"\]/);
   assert.match(styles, /\.realm-card__routes\s*\{\s*grid-template-columns:\s*1fr/);
 });
+
+test("玩家建議形成首屏短循環、收藏櫃與不遮擋 HUD", async () => {
+  const [app, styles] = await Promise.all([
+    readProjectFile("src/app.js"),
+    readProjectFile("styles.css"),
+  ]);
+
+  assert.match(app, /createReturnPlayerHud/);
+  assert.match(app, /今日霧海變化/);
+  assert.match(app, /下一收藏/);
+  assert.match(app, /妖界收藏櫃/);
+  assert.match(app, /我的修行史/);
+  assert.match(app, /featuredRelicId/);
+  assert.match(app, /featuredBadgeId/);
+  assert.match(app, /scheduleProgressDockSafety/);
+  assert.match(styles, /\.return-player-hud/);
+  assert.match(styles, /\.collection-cabinet/);
+  assert.match(styles, /\.relic-card/);
+  assert.match(styles, /\.progress-dock\[data-safe="hidden"\]/);
+});

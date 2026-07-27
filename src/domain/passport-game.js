@@ -25,9 +25,66 @@ export const PASSPORT_SEALS = Object.freeze([
 ]);
 
 const RELICS = Object.freeze([
-  Object.freeze({ id: "mist-compass", label: "霧海羅盤", unlockAt: 60 }),
-  Object.freeze({ id: "moon-thread", label: "月絲護符", unlockAt: 150 }),
-  Object.freeze({ id: "seven-realm-scroll", label: "七域祕卷", unlockAt: 300 }),
+  Object.freeze({
+    id: "mist-compass",
+    label: "霧海羅盤",
+    glyph: "羅",
+    rarity: "珍奇",
+    realm: "霧海入口",
+    story: "墨尾循著第一批足跡磨亮的羅盤，會永遠指向你今天走得動的路。",
+    art: "/assets/characters/ink-tail-guide/idle.webp",
+    unlockAt: 30,
+  }),
+  Object.freeze({
+    id: "moon-thread",
+    label: "月絲護符",
+    glyph: "絲",
+    rarity: "稀有",
+    realm: "字字珠璣",
+    story: "從字網鬆開的第一縷月絲織成，提醒小行者：辨清一點，整張網就會鬆動。",
+    art: "/assets/realms/ink-spider-cave-v3.webp",
+    unlockAt: 60,
+  }),
+  Object.freeze({
+    id: "wind-leaf-pin",
+    label: "風語葉徽",
+    glyph: "葉",
+    rarity: "稀有",
+    realm: "字鬥英雄",
+    story: "能把聲音、意思與情境別在一起的風葉，是芭蕉谷送給耐心聆聽者的記號。",
+    art: "/assets/realms/plantain-word-valley-v3.webp",
+    unlockAt: 100,
+  }),
+  Object.freeze({
+    id: "golden-ring-fragment",
+    label: "金環殘片",
+    glyph: "環",
+    rarity: "史詩",
+    realm: "步學吾數",
+    story: "每看懂一個規律，殘片便轉正一格；集滿時，沉睡的算陣山路會重新亮起。",
+    art: "/assets/realms/golden-ring-math-ridge-v3.webp",
+    unlockAt: 150,
+  }),
+  Object.freeze({
+    id: "starlight-flask",
+    label: "星光藥瓶",
+    glyph: "星",
+    rarity: "史詩",
+    realm: "科學英雄",
+    story: "瓶裡收藏的不是答案，而是一路追問留下的星光。",
+    art: "/assets/realms/science-hero-v2.webp",
+    unlockAt: 220,
+  }),
+  Object.freeze({
+    id: "seven-realm-scroll",
+    label: "七域祕卷",
+    glyph: "卷",
+    rarity: "傳說",
+    realm: "七域同行",
+    story: "七域足跡交會後才會展開的祕卷，記錄小行者如何把微小投入走成自己的路。",
+    art: "/assets/realms/fanren-lianxin-v2.webp",
+    unlockAt: 300,
+  }),
 ]);
 
 export const SUPPORT_TONES = Object.freeze([
@@ -60,9 +117,15 @@ const MYSTERY_MESSAGES = Object.freeze({
 });
 
 const flattenReports = (missionHistory = {}) =>
-  Object.values(missionHistory)
-    .flatMap((reports) => (Array.isArray(reports) ? reports : [reports]))
-    .filter(Boolean);
+  Object.entries(missionHistory)
+    .flatMap(([dateKey, reports]) =>
+      (Array.isArray(reports) ? reports : [reports])
+        .filter(Boolean)
+        .map((report) => ({ ...report, dateKey })),
+    );
+
+const reportTime = (report) =>
+  report.occurredAt ?? `${report.dateKey}T00:00:00.000Z`;
 
 const reportXp = ({ status, durationMinutes = 0 }) =>
   status === "complete"
@@ -73,7 +136,10 @@ const reportXp = ({ status, durationMinutes = 0 }) =>
 
 export function buildPassportSnapshot(student = {}) {
   const reports = flattenReports(student.missionHistory);
-  const activeReports = reports.filter(
+  const chronologicalReports = reports.sort((left, right) =>
+    reportTime(left).localeCompare(reportTime(right)),
+  );
+  const activeReports = chronologicalReports.filter(
     ({ status }) => status === "complete" || status === "partial",
   );
   const xp = activeReports.reduce((sum, report) => sum + reportXp(report), 0);
@@ -92,25 +158,86 @@ export function buildPassportSnapshot(student = {}) {
   const northStarLabel =
     NORTH_STAR_OPTIONS.find(({ id }) => id === student.northStar)?.label ??
     "尚未選定北極星";
-  const unlockedRelics = RELICS.filter(({ unlockAt }) => xp >= unlockAt);
-  const lockedRelic = RELICS.find(({ unlockAt }) => xp < unlockAt) ?? null;
+  const acquiredAtByRelic = new Map();
+  let runningXp = 0;
+  for (const report of activeReports) {
+    runningXp += reportXp(report);
+    for (const relic of RELICS) {
+      if (
+        runningXp >= relic.unlockAt &&
+        !acquiredAtByRelic.has(relic.id)
+      ) {
+        acquiredAtByRelic.set(relic.id, reportTime(report));
+      }
+    }
+  }
+  const collection = RELICS.map((relic) => ({
+    ...relic,
+    unlocked: xp >= relic.unlockAt,
+    progressXp: Math.min(xp, relic.unlockAt),
+    acquiredAt: acquiredAtByRelic.get(relic.id) ?? null,
+  }));
+  const unlockedRelics = collection.filter(({ unlocked }) => unlocked);
+  const lockedRelic = collection.find(({ unlocked }) => !unlocked) ?? null;
   const badges = [];
 
   if (activeReports.length >= 1) {
-    badges.push({ id: "first-step", label: "第一步行者" });
+    badges.push({
+      id: "first-step",
+      label: "第一步行者",
+      glyph: "步",
+      achievedAt: reportTime(activeReports[0]),
+    });
   }
   if (exploredRealms >= 3) {
-    badges.push({ id: "three-realms", label: "三域探路者" });
+    const visited = new Set();
+    const thirdRealmReport = activeReports.find((report) => {
+      if (report.siteId) visited.add(report.siteId);
+      return visited.size >= 3;
+    });
+    badges.push({
+      id: "three-realms",
+      label: "三域探路者",
+      glyph: "域",
+      achievedAt: thirdRealmReport ? reportTime(thirdRealmReport) : null,
+    });
   }
-  if (activeReports.some(({ strategy }) => strategy)) {
-    badges.push({ id: "strategy-maker", label: "自造路法師" });
+  const strategyReport = activeReports.find(({ strategy }) => strategy);
+  if (strategyReport) {
+    badges.push({
+      id: "strategy-maker",
+      label: "自造路法師",
+      glyph: "法",
+      achievedAt: reportTime(strategyReport),
+    });
   }
-  if (reports.some(({ status }) => status === "rest")) {
-    badges.push({ id: "rest-guardian", label: "安心守燈人" });
+  const restReport = chronologicalReports.find(({ status }) => status === "rest");
+  if (restReport) {
+    badges.push({
+      id: "rest-guardian",
+      label: "安心守燈人",
+      glyph: "安",
+      achievedAt: reportTime(restReport),
+    });
   }
   if ((student.activeDays ?? []).length >= 7) {
-    badges.push({ id: "seven-lights", label: "七燈破霧者" });
+    badges.push({
+      id: "seven-lights",
+      label: "七燈破霧者",
+      glyph: "燈",
+      achievedAt: [...new Set(student.activeDays)].sort()[6] ?? null,
+    });
   }
+  const featuredRelic =
+    unlockedRelics.find(
+      ({ id }) => id === student.passport?.featuredRelicId,
+    ) ??
+    unlockedRelics[0] ??
+    null;
+  const featuredBadge =
+    badges.find(({ id }) => id === student.passport?.featuredBadgeId) ??
+    badges[0] ??
+    null;
 
   return {
     xp,
@@ -122,13 +249,26 @@ export function buildPassportSnapshot(student = {}) {
     badges,
     seal,
     northStarLabel,
+    collection,
     unlockedRelics,
+    featuredRelic,
+    featuredBadge,
     nextRelic: lockedRelic
       ? {
           ...lockedRelic,
           remainingXp: lockedRelic.unlockAt - xp,
         }
       : null,
+    recentHistory: [...chronologicalReports]
+      .reverse()
+      .slice(0, 6)
+      .map((report) => ({
+        missionId: report.missionId,
+        siteId: report.siteId,
+        status: report.status,
+        occurredAt: reportTime(report),
+        earnedXp: reportXp(report),
+      })),
   };
 }
 

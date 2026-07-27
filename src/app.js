@@ -1,4 +1,5 @@
 import { buildHomeState } from "./domain/home-state.js";
+import { getDailyFlavor } from "./domain/daily-flavor.js";
 import { getPlatformsForRole } from "./domain/platform-guide.js";
 import { getReturnVoyage, getSevenLights } from "./domain/progress.js";
 import {
@@ -25,6 +26,8 @@ const store = createLocalStore(window.localStorage);
 const loaded = store.load();
 let localState = loaded.state;
 let selectedMissionId = null;
+let pendingReturnMissionId = null;
+let dockSafetyFrame = null;
 
 const SUBJECT_SITE_IDS = Object.freeze({
   language: "zizizhuji",
@@ -49,6 +52,11 @@ const taipeiDateFormatter = new Intl.DateTimeFormat("en-CA", {
   month: "2-digit",
   day: "2-digit",
 });
+const displayDateFormatter = new Intl.DateTimeFormat("zh-TW", {
+  timeZone: "Asia/Taipei",
+  month: "numeric",
+  day: "numeric",
+});
 
 function node(tagName, { className = "", text = "", attributes = {} } = {}) {
   const element = document.createElement(tagName);
@@ -67,8 +75,12 @@ function saveLocalState() {
   }
 }
 
+function getTodayKey() {
+  return taipeiDateFormatter.format(new Date());
+}
+
 function getTodayReport(missionId) {
-  const dateKey = taipeiDateFormatter.format(new Date());
+  const dateKey = getTodayKey();
   const stored = localState.student.missionHistory?.[dateKey];
   const reports = Array.isArray(stored) ? stored : stored ? [stored] : [];
   return reports.find((report) => report.missionId === missionId) ?? null;
@@ -86,6 +98,40 @@ function checkInMission(mission, status, additions = {}) {
   };
   saveLocalState();
   render();
+  window.requestAnimationFrame(() => {
+    document
+      .querySelector(`[data-feedback-mission="${mission.id}"]`)
+      ?.focus({ preventScroll: false });
+  });
+}
+
+function getMissionReward(mission, status = "complete") {
+  return status === "complete"
+    ? 20 + mission.durationMinutes
+    : 10 + Math.floor(mission.durationMinutes / 2);
+}
+
+function hasStudentHistory() {
+  return Object.keys(localState.student.missionHistory ?? {}).length > 0;
+}
+
+function markMissionLaunched(missionId) {
+  pendingReturnMissionId = missionId;
+}
+
+function focusPendingReturn() {
+  if (!pendingReturnMissionId) return;
+  const panel = [...document.querySelectorAll("[data-return-mission]")].find(
+    ({ dataset }) => dataset.returnMission === pendingReturnMissionId,
+  );
+  if (!panel) return;
+  panel.classList.add("mission-return--welcome");
+  panel.scrollIntoView({
+    behavior: shouldReduceMotion() ? "auto" : "smooth",
+    block: "center",
+  });
+  panel.focus({ preventScroll: true });
+  pendingReturnMissionId = null;
 }
 
 function shouldReduceMotion() {
@@ -211,7 +257,10 @@ function createRolePanel(home, activeRole) {
 }
 
 function createWorldGuide() {
-  if (localState.student.visualPreference.worldGuideDismissed) {
+  if (
+    localState.student.visualPreference.worldGuideDismissed ||
+    hasStudentHistory()
+  ) {
     return null;
   }
 
@@ -280,6 +329,123 @@ function createMissionSwitcher(home, mission) {
   return switcher;
 }
 
+function createMissionOutlook(mission) {
+  const snapshot = buildPassportSnapshot(localState.student);
+  const lights = getSevenLights({
+    activeDays: localState.student.activeDays,
+  });
+  const expectedXp = getMissionReward(mission);
+  const remainingAfterMission = snapshot.nextRelic
+    ? Math.max(0, snapshot.nextRelic.remainingXp - expectedXp)
+    : null;
+  const outlook = node("div", {
+    className: "mission-outlook",
+    attributes: { "aria-label": "完成任務後的成長預覽" },
+  });
+  outlook.append(
+    node("span", { text: `完成可得＋${expectedXp} 習光` }),
+    node("span", {
+      text: snapshot.nextRelic
+        ? remainingAfterMission === 0
+          ? `完成即可解鎖「${snapshot.nextRelic.label}」`
+          : `完成後，下一收藏「${snapshot.nextRelic.label}」還差 ${remainingAfterMission} 習光`
+        : "七域收藏已全部解鎖",
+    }),
+    node("span", {
+      text: `七燈 ${lights.litCount}／7・不必連續`,
+    }),
+  );
+  return outlook;
+}
+
+function createDailyFlavorCard(mission) {
+  const flavor = getDailyFlavor({
+    dateKey: getTodayKey(),
+    siteId: mission.siteId,
+  });
+  const card = node("aside", {
+    className: "daily-flavor",
+    attributes: { "aria-label": "今日霧海變化" },
+  });
+  card.append(
+    node("div", {
+      className: "daily-flavor__heading",
+      text: `今日霧海變化・${flavor.label}`,
+    }),
+    node("p", { text: flavor.message }),
+    node("p", {
+      className: "daily-flavor__collectible",
+      text: flavor.collectibleHint,
+    }),
+    node("p", {
+      className: "daily-flavor__clue",
+      text: `今日線索：${mission.curiosityPrompt}`,
+    }),
+  );
+  return card;
+}
+
+function createMissionLink(mission, { compact = false } = {}) {
+  const link = node("a", {
+    className: compact ? "return-player-hud__cta" : "primary-cta",
+    text: compact
+      ? `繼續 ${mission.durationMinutes} 分鐘任務`
+      : `開始 ${mission.durationMinutes} 分鐘${mission.subject}任務`,
+    attributes: {
+      href: mission.url,
+      "aria-label": `開新分頁前往${mission.subject}任務：${mission.title}`,
+    },
+  });
+  link.target = "_blank";
+  link.rel = "noopener noreferrer";
+  link.addEventListener("click", () => markMissionLaunched(mission.id));
+  return link;
+}
+
+function createReturnPlayerHud(home, mission) {
+  const hud = node("section", {
+    className: "return-player-hud",
+    attributes: { "aria-labelledby": "return-player-heading" },
+  });
+  const copy = node("div", { className: "return-player-hud__copy" });
+  copy.append(
+    node("p", { className: "eyebrow", text: "歡迎回來・延續上次設定" }),
+    node("h2", {
+      text: mission.title,
+      attributes: { id: "return-player-heading" },
+    }),
+    node("p", {
+      text: `${mission.subject}・${mission.durationMinutes} 分鐘・完成可得＋${getMissionReward(mission)} 習光`,
+    }),
+  );
+
+  const subjects = node("div", {
+    className: "return-player-hud__subjects",
+    attributes: { role: "group", "aria-label": "快速更換網站" },
+  });
+  for (const realm of home.realms) {
+    const nextMission =
+      realm.routes.find(
+        ({ durationMinutes }) =>
+          durationMinutes === mission.durationMinutes,
+      ) ?? realm.routes[0];
+    const button = node("button", {
+      text: realm.name,
+      attributes: {
+        type: "button",
+        "aria-pressed": String(nextMission.id === mission.id),
+      },
+    });
+    button.addEventListener("click", () =>
+      selectStudentMission(realm, nextMission),
+    );
+    subjects.append(button);
+  }
+
+  hud.append(copy, subjects, createMissionLink(mission, { compact: true }));
+  return hud;
+}
+
 function createStudentHero(home, mission, focusMode) {
   const hero = node("section", {
     className: "hero",
@@ -329,31 +495,15 @@ function createStudentHero(home, mission, focusMode) {
             : "標準航線",
     }),
   );
-  scroll.append(meta);
-  scroll.append(createMissionSwitcher(home, mission));
+  scroll.append(meta, createMissionOutlook(mission));
   scroll.append(
-    node("p", {
-      className: "clue-box",
-      text: `先帶著一個線索出發：${mission.curiosityPrompt}`,
-    }),
-  );
-
-  const link = node("a", {
-    className: "primary-cta",
-    text: `開始 ${mission.durationMinutes} 分鐘${mission.subject}任務`,
-    attributes: {
-      href: mission.url,
-      "aria-label": `開新分頁前往${mission.subject}任務：${mission.title}`,
-    },
-  });
-  link.target = "_blank";
-  link.rel = "noopener noreferrer";
-  scroll.append(
-    link,
+    createMissionLink(mission),
     node("p", {
       className: "mission-note",
       text: "完成多少都可以回來落印；系統不會讀取外站成績。",
     }),
+    createDailyFlavorCard(mission),
+    createMissionSwitcher(home, mission),
     createMissionReturnPanel(mission, home.guideCelebration),
   );
 
@@ -365,6 +515,8 @@ function createCheckInFeedback(mission, report, guideCelebration) {
   const feedback = node("section", {
     className: `checkin-feedback checkin-feedback--${report.status}`,
     attributes: {
+      tabindex: "-1",
+      "data-feedback-mission": mission.id,
       "aria-live": "polite",
       "aria-label": "落印結果",
     },
@@ -395,13 +547,11 @@ function createCheckInFeedback(mission, report, guideCelebration) {
       }),
     );
   } else {
-    const earnedXp =
-      report.status === "complete"
-        ? 20 + mission.durationMinutes
-        : 10 + Math.floor(mission.durationMinutes / 2);
+    const earnedXp = getMissionReward(mission, report.status);
     const lights = getSevenLights({
       activeDays: localState.student.activeDays,
     });
+    const snapshot = buildPassportSnapshot(localState.student);
     const mystery = getLatestMystery(localState.student);
     const rewards = node("div", { className: "checkin-rewards" });
     rewards.append(
@@ -414,6 +564,12 @@ function createCheckInFeedback(mission, report, guideCelebration) {
         className: "checkin-mystery",
         text: mystery?.message ?? "霧海記住了你今天走過的路。",
       }),
+      node("p", {
+        className: "checkin-next-target",
+        text: snapshot.nextRelic
+          ? `下一收藏：${snapshot.nextRelic.label}，目前 ${snapshot.nextRelic.progressXp}／${snapshot.nextRelic.unlockAt} 習光；七燈還差 ${Math.max(0, 7 - lights.litCount)} 盞。`
+          : `七域收藏已全部解鎖；七燈還差 ${Math.max(0, 7 - lights.litCount)} 盞。`,
+      }),
     );
   }
   feedback.append(reaction, copy);
@@ -424,7 +580,11 @@ function createMissionReturnPanel(mission, guideCelebration) {
   const report = getTodayReport(mission.id);
   const panel = node("section", {
     className: "mission-return",
-    attributes: { "aria-label": "回到護照落印" },
+    attributes: {
+      tabindex: "-1",
+      "data-return-mission": mission.id,
+      "aria-label": "回到護照落印",
+    },
   });
   panel.append(
     node("strong", { text: "回到護照落印" }),
@@ -525,7 +685,7 @@ function createMissionReturnPanel(mission, guideCelebration) {
   return panel;
 }
 
-function createPassportSection() {
+function createPassportSection(home) {
   const snapshot = buildPassportSnapshot(localState.student);
   const section = node("section", {
     className: "passport-section",
@@ -632,32 +792,71 @@ function createPassportSection() {
   settings.append(northStar, seals);
 
   const collection = node("div", { className: "passport-collection" });
-  const badgeCard = node("article");
-  badgeCard.append(node("h3", { text: "成長徽記" }));
-  const badges = node("div", { className: "badge-list" });
+  const badgeCard = node("article", { className: "badge-wall" });
+  badgeCard.append(node("h3", { text: "我的徽章牆" }));
+  const badges = node("div", {
+    className: "badge-list",
+    attributes: { role: "group", "aria-label": "選擇代表徽章" },
+  });
   if (snapshot.badges.length === 0) {
     badges.append(node("span", { text: "完成第一小步，就會獲得第一枚徽記。" }));
   } else {
     for (const badge of snapshot.badges) {
-      badges.append(node("span", { text: badge.label }));
+      const button = node("button", {
+        className: "badge-token",
+        text: `${badge.glyph} ${badge.label}`,
+        attributes: {
+          type: "button",
+          "aria-pressed": String(snapshot.featuredBadge?.id === badge.id),
+          title: badge.achievedAt
+            ? `取得於 ${displayDateFormatter.format(new Date(badge.achievedAt))}`
+            : "設為護照代表徽章",
+        },
+      });
+      button.addEventListener("click", () => {
+        localState = {
+          ...localState,
+          student: {
+            ...localState.student,
+            passport: {
+              ...(localState.student.passport ?? {}),
+              featuredBadgeId: badge.id,
+            },
+          },
+        };
+        saveLocalState();
+        render();
+      });
+      badges.append(button);
     }
   }
   badgeCard.append(badges);
 
-  const relicCard = node("article");
-  relicCard.append(node("h3", { text: "稀有收藏" }));
-  const relics = node("div", { className: "relic-list" });
-  for (const relic of snapshot.unlockedRelics) {
-    relics.append(node("span", { text: `已解鎖・${relic.label}` }));
+  const featuredCard = node("article", { className: "featured-asset" });
+  featuredCard.append(node("h3", { text: "稀有收藏展示位" }));
+  if (snapshot.featuredRelic) {
+    featuredCard.append(
+      node("strong", {
+        text: `${snapshot.featuredRelic.glyph} ${snapshot.featuredRelic.label}`,
+      }),
+      node("p", {
+        text: `${snapshot.featuredRelic.rarity}收藏・來自${snapshot.featuredRelic.realm}`,
+      }),
+    );
+  } else {
+    featuredCard.append(
+      node("strong", { text: "第一件收藏正在霧裡等你" }),
+      node("p", { text: "完成一條今天走得動的任務，就會讓剪影更清楚。" }),
+    );
   }
-  if (snapshot.nextRelic) {
-    relics.append(
+  if (snapshot.featuredBadge) {
+    featuredCard.append(
       node("span", {
-        text: `再累積 ${snapshot.nextRelic.remainingXp} 習光，解鎖 ${snapshot.nextRelic.label}`,
+        className: "featured-badge",
+        text: `代表徽章・${snapshot.featuredBadge.label}`,
       }),
     );
   }
-  relicCard.append(relics);
 
   const mysteryCard = node("article", { className: "mystery-card" });
   const mystery = getLatestMystery(localState.student);
@@ -667,9 +866,178 @@ function createPassportSection() {
       text: mystery?.message ?? "完成或部分完成一條航線，霧海才會揭開下一句密語。",
     }),
   );
-  collection.append(badgeCard, relicCard, mysteryCard);
+  collection.append(featuredCard, badgeCard, mysteryCard);
 
   section.append(heading, metrics, progress, settings, collection);
+
+  const cabinet = node("section", {
+    className: "collection-cabinet",
+    attributes: { "aria-labelledby": "collection-cabinet-heading" },
+  });
+  const cabinetHeading = node("header", {
+    className: "collection-cabinet__heading",
+  });
+  const cabinetHeadingCopy = node("div");
+  cabinetHeadingCopy.append(
+    node("p", { className: "eyebrow", text: "可擁有・可展示・不會消失" }),
+    node("h3", {
+      text: "妖界收藏櫃",
+      attributes: { id: "collection-cabinet-heading" },
+    }),
+  );
+  cabinetHeading.append(cabinetHeadingCopy);
+  cabinetHeading.append(
+    node("p", {
+      text: snapshot.nextRelic
+        ? `目前 ${snapshot.xp}／${snapshot.nextRelic.unlockAt} 習光，下一件是「${snapshot.nextRelic.label}」。`
+        : "七域收藏已全部解鎖，走過的每一步都留在櫃中。",
+    }),
+  );
+  const cabinetGrid = node("div", { className: "collection-cabinet__grid" });
+  for (const relic of snapshot.collection) {
+    const card = node("article", {
+      className: "relic-card",
+      attributes: {
+        "data-unlocked": String(relic.unlocked),
+        "aria-label": `${relic.label}，${relic.unlocked ? "已解鎖" : "尚未解鎖"}`,
+      },
+    });
+    const art = node("figure", { className: "relic-card__art" });
+    const image = node("img");
+    image.src = relic.art;
+    image.alt = relic.unlocked
+      ? `${relic.label}收藏卡面`
+      : `${relic.label}尚未解鎖的剪影`;
+    image.width = 480;
+    image.height = 300;
+    art.append(
+      image,
+      node("span", {
+        className: "relic-card__glyph",
+        text: relic.glyph,
+        attributes: { "aria-hidden": "true" },
+      }),
+    );
+    const copy = node("div", { className: "relic-card__copy" });
+    copy.append(
+      node("span", {
+        className: "relic-card__rarity",
+        text: `${relic.rarity}・${relic.realm}`,
+      }),
+      node("h4", { text: relic.label }),
+      node("p", { text: relic.story }),
+    );
+    if (relic.unlocked) {
+      copy.append(
+        node("span", {
+          className: "relic-card__date",
+          text: relic.acquiredAt
+            ? `取得於 ${displayDateFormatter.format(new Date(relic.acquiredAt))}`
+            : "已收入收藏櫃",
+        }),
+      );
+      const equip = node("button", {
+        text:
+          snapshot.featuredRelic?.id === relic.id
+            ? "目前展示中"
+            : "設為護照展示",
+        attributes: {
+          type: "button",
+          "aria-pressed": String(snapshot.featuredRelic?.id === relic.id),
+        },
+      });
+      equip.addEventListener("click", () => {
+        localState = {
+          ...localState,
+          student: {
+            ...localState.student,
+            passport: {
+              ...(localState.student.passport ?? {}),
+              featuredRelicId: relic.id,
+            },
+          },
+        };
+        saveLocalState();
+        render();
+      });
+      copy.append(equip);
+    } else {
+      const relicProgress = node("div", {
+        className: "relic-card__progress",
+        attributes: {
+          role: "progressbar",
+          "aria-label": `${relic.label}解鎖進度`,
+          "aria-valuemin": "0",
+          "aria-valuemax": String(relic.unlockAt),
+          "aria-valuenow": String(relic.progressXp),
+        },
+      });
+      const fill = node("span");
+      fill.style.width = `${Math.round((relic.progressXp / relic.unlockAt) * 100)}%`;
+      relicProgress.append(fill);
+      copy.append(
+        node("span", {
+          className: "relic-card__date",
+          text: `${relic.progressXp}／${relic.unlockAt} 習光`,
+        }),
+        relicProgress,
+      );
+    }
+    card.append(art, copy);
+    cabinetGrid.append(card);
+  }
+  cabinet.append(cabinetHeading, cabinetGrid);
+  section.append(cabinet);
+
+  const history = node("section", {
+    className: "practice-history",
+    attributes: { "aria-labelledby": "practice-history-heading" },
+  });
+  history.append(
+    node("h3", {
+      text: "我的修行史",
+      attributes: { id: "practice-history-heading" },
+    }),
+  );
+  const historyList = node("ol");
+  if (snapshot.recentHistory.length === 0) {
+    historyList.append(
+      node("li", { text: "第一筆足跡會在完成、部分完成或安心休息後出現。" }),
+    );
+  } else {
+    const missionNames = new Map(
+      home.realms
+        .flatMap(({ routes }) => routes)
+        .map(({ id, title }) => [id, title]),
+    );
+    for (const item of snapshot.recentHistory) {
+      const statusLabel =
+        item.status === "complete"
+          ? "完成"
+          : item.status === "partial"
+            ? "走了一部分"
+            : "安心休息";
+      const historyItem = node("li");
+      historyItem.append(
+        node("time", {
+          text: displayDateFormatter.format(new Date(item.occurredAt)),
+          attributes: { datetime: item.occurredAt },
+        }),
+        node("strong", {
+          text: missionNames.get(item.missionId) ?? "今日修行",
+        }),
+        node("span", {
+          text:
+            item.earnedXp > 0
+              ? `${statusLabel}・＋${item.earnedXp} 習光`
+              : `${statusLabel}・收藏與足跡都保留`,
+        }),
+      );
+      historyList.append(historyItem);
+    }
+  }
+  history.append(historyList);
+  section.append(history);
   if (localState.student.encouragement?.message) {
     const encouragement = node("blockquote", {
       className: "encouragement-card",
@@ -1001,10 +1369,12 @@ function createProgressDock() {
   const lights = getSevenLights({
     activeDays: localState.student.activeDays,
   });
+  const snapshot = buildPassportSnapshot(localState.student);
   const dock = node("aside", {
     className: "progress-dock",
     attributes: {
       "data-expanded": "false",
+      "data-safe": "clear",
       "aria-label": `七燈破霧，目前點亮 ${lights.litCount} 盞`,
     },
   });
@@ -1024,16 +1394,68 @@ function createProgressDock() {
     }),
     node("span", {
       className: "progress-dock__label",
-      text: "七燈破霧・不必連續",
+      text: snapshot.nextRelic
+        ? `七燈 ${lights.litCount}／7・下一收藏差 ${snapshot.nextRelic.remainingXp}`
+        : `七燈 ${lights.litCount}／7・收藏全解鎖`,
     }),
   );
   toggle.addEventListener("click", () => {
     const expanded = dock.dataset.expanded !== "true";
     dock.dataset.expanded = String(expanded);
     toggle.setAttribute("aria-expanded", String(expanded));
+    scheduleProgressDockSafety();
   });
   dock.append(toggle);
   return dock;
+}
+
+function rectanglesOverlap(left, right, gap = 8) {
+  return !(
+    left.right + gap <= right.left ||
+    left.left >= right.right + gap ||
+    left.bottom + gap <= right.top ||
+    left.top >= right.bottom + gap
+  );
+}
+
+function syncProgressDockSafety() {
+  dockSafetyFrame = null;
+  const dock = document.querySelector(".progress-dock");
+  const toggle = dock?.querySelector(".progress-dock__toggle");
+  if (!dock || !toggle || dock.dataset.expanded === "true") return;
+
+  dock.dataset.safe = "clear";
+  toggle.removeAttribute("tabindex");
+  const dockRect = dock.getBoundingClientRect();
+  const collision = [
+    ...document.querySelectorAll(
+      "a, button, input, summary, [tabindex]:not([tabindex='-1']), .mission-scroll, .map-stage, .return-player-hud, .passport-section, .realm-card, .platform-card, .role-notice, .support-studio",
+    ),
+  ].some((element) => {
+    if (dock.contains(element)) return false;
+    const rect = element.getBoundingClientRect();
+    if (
+      rect.width === 0 ||
+      rect.height === 0 ||
+      rect.bottom <= 0 ||
+      rect.top >= window.innerHeight
+    ) {
+      return false;
+    }
+    return rectanglesOverlap(dockRect, rect);
+  });
+
+  if (collision) {
+    dock.dataset.safe = "hidden";
+    toggle.setAttribute("tabindex", "-1");
+  }
+}
+
+function scheduleProgressDockSafety() {
+  if (dockSafetyFrame !== null) {
+    window.cancelAnimationFrame(dockSafetyFrame);
+  }
+  dockSafetyFrame = window.requestAnimationFrame(syncProgressDockSafety);
 }
 
 function createHeader() {
@@ -1118,6 +1540,12 @@ function render() {
   );
 
   if (activeRole === "student") {
+    if (
+      hasStudentHistory() &&
+      !localState.student.visualPreference.focusMode
+    ) {
+      shell.append(createReturnPlayerHud(home, mission));
+    }
     const worldGuide = createWorldGuide();
     if (worldGuide) {
       shell.append(worldGuide);
@@ -1129,7 +1557,7 @@ function render() {
         localState.student.visualPreference.focusMode,
       ),
       createRestorativeBanner(home, mission),
-      createPassportSection(),
+      createPassportSection(home),
       createRealmSection(home, activeRole),
       createPlatformSection(activeRole),
     );
@@ -1151,6 +1579,15 @@ function render() {
   }
   shell.append(createProgressDock());
   app.replaceChildren(shell);
+  scheduleProgressDockSafety();
 }
+
+window.addEventListener("focus", () => {
+  window.requestAnimationFrame(focusPendingReturn);
+});
+window.addEventListener("scroll", scheduleProgressDockSafety, {
+  passive: true,
+});
+window.addEventListener("resize", scheduleProgressDockSafety);
 
 render();
