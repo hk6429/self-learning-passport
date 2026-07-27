@@ -3,19 +3,20 @@ import test from "node:test";
 
 import { CHARACTER_CATALOG } from "../../src/data/character-catalog.js";
 
-test("首波角色目錄收錄八位名稱與 id 皆唯一的角色", () => {
-  assert.equal(CHARACTER_CATALOG.length, 8);
+test("角色目錄收錄八位功能角色與三位妖域主要 NPC，名稱與 id 皆唯一", () => {
+  assert.equal(CHARACTER_CATALOG.length, 11);
 
   const ids = CHARACTER_CATALOG.map(({ id }) => id);
   const names = CHARACTER_CATALOG.map(({ name }) => name);
 
-  assert.equal(new Set(ids).size, 8, "角色 id 不可重複");
-  assert.equal(new Set(names).size, 8, "角色名稱不可重複");
+  assert.equal(new Set(ids).size, 11, "角色 id 不可重複");
+  assert.equal(new Set(names).size, 11, "角色名稱不可重複");
 
   for (const character of CHARACTER_CATALOG) {
     assert.ok(character.id);
     assert.ok(character.name);
     assert.ok(character.role);
+    assert.ok(character.characterType);
   }
 });
 
@@ -84,4 +85,53 @@ test("墨尾行者四種狀態提供精準 alt 與 fallback，其餘角色可沿
   assert.equal(legacyCharacter.stateText, undefined);
   assert.ok(legacyCharacter.alt);
   assert.ok(legacyCharacter.assets.fallback);
+});
+
+test("既有八位角色皆為功能支援角色，且 featureId 對應固定", () => {
+  const expectedFeatures = new Map([
+    ["ink-tail-guide", "daily-route-guide"],
+    ["moon-rabbit-healer", "habit-recovery"],
+    ["fire-cloud-starter", "five-minute-start"],
+    ["star-web-weaver", "mission-map"],
+    ["yellow-wind-scout", "branch-exploration"],
+    ["plantain-wind-keeper", "pace-rest"],
+    ["black-wind-archivist", "achievement-review"],
+    ["nine-spirit-mentor", "class-nebula"],
+  ]);
+
+  for (const [id, featureId] of expectedFeatures) {
+    const character = CHARACTER_CATALOG.find((candidate) => candidate.id === id);
+    assert.equal(character.characterType, "functional-support");
+    assert.equal(character.featureId, featureId);
+  }
+});
+
+test("三位妖域主要 NPC 是獨立角色，不使用功能角色作 alias", () => {
+  const expectedPrimaryCharacters = new Map([
+    ["ink-cave-spider-seven", "墨蛛小七"],
+    ["wind-valley-green-horn", "青角小牛妖"],
+    ["golden-ridge-tablet-turtle", "負碑小龜妖"],
+  ]);
+
+  const primaryCharacters = CHARACTER_CATALOG.filter(
+    ({ characterType }) => characterType === "realm-primary",
+  );
+  assert.equal(primaryCharacters.length, 3);
+
+  for (const [id, name] of expectedPrimaryCharacters) {
+    const character = primaryCharacters.find((candidate) => candidate.id === id);
+    assert.equal(character.name, name);
+    assert.equal(character.featureId, undefined);
+  }
+
+  assert.equal(
+    primaryCharacters.some(({ id }) => id === "star-web-weaver"),
+    false,
+    "織霞蛛娘不可冒充墨蛛小七",
+  );
+  assert.equal(
+    primaryCharacters.some(({ id }) => id === "fire-cloud-starter"),
+    false,
+    "火雲小將不可冒充青角小牛妖",
+  );
 });

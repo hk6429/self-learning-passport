@@ -32,6 +32,8 @@ export const CHARACTER_CATALOG = Object.freeze([
   {
     id: "ink-tail-guide",
     name: "墨尾行者",
+    characterType: "functional-support",
+    featureId: "daily-route-guide",
     role: "首頁引路與今日任務",
     alt: "墨尾行者甩動墨筆尾巴，指向今日航線。",
     assets: characterAssets(
@@ -43,6 +45,8 @@ export const CHARACTER_CATALOG = Object.freeze([
   {
     id: "moon-rabbit-healer",
     name: "玉兔藥師",
+    characterType: "functional-support",
+    featureId: "habit-recovery",
     role: "微習慣與安心回航",
     alt: "玉兔藥師托著微光丸，在月輪前溫柔等候。",
     assets: characterAssets(
@@ -53,6 +57,8 @@ export const CHARACTER_CATALOG = Object.freeze([
   {
     id: "fire-cloud-starter",
     name: "火雲小將",
+    characterType: "functional-support",
+    featureId: "five-minute-start",
     role: "五分鐘啟動",
     alt: "火雲小將握著點火筆，腳下浮著柔軟火雲。",
     assets: characterAssets(
@@ -63,6 +69,8 @@ export const CHARACTER_CATALOG = Object.freeze([
   {
     id: "star-web-weaver",
     name: "織霞蛛娘",
+    characterType: "functional-support",
+    featureId: "mission-map",
     role: "任務地圖與拆解",
     alt: "織霞蛛娘用梭子整理閃亮星網與任務地圖。",
     assets: characterAssets(
@@ -73,6 +81,8 @@ export const CHARACTER_CATALOG = Object.freeze([
   {
     id: "yellow-wind-scout",
     name: "黃風貂斥候",
+    characterType: "functional-support",
+    featureId: "branch-exploration",
     role: "支線與探索",
     alt: "黃風貂斥候舉起羅盤，蓬鬆大尾迎風擺動。",
     assets: characterAssets(
@@ -83,6 +93,8 @@ export const CHARACTER_CATALOG = Object.freeze([
   {
     id: "plantain-wind-keeper",
     name: "芭蕉風姬",
+    characterType: "functional-support",
+    featureId: "pace-rest",
     role: "節奏與休息",
     alt: "芭蕉風姬披著葉片披風，輕輕收起芭蕉扇。",
     assets: characterAssets(
@@ -93,6 +105,8 @@ export const CHARACTER_CATALOG = Object.freeze([
   {
     id: "black-wind-archivist",
     name: "黑風熊藏書官",
+    characterType: "functional-support",
+    featureId: "achievement-review",
     role: "成果收藏與回顧",
     alt: "黑風熊藏書官背著卷軸包，整理已留下的足跡。",
     assets: characterAssets(
@@ -103,11 +117,46 @@ export const CHARACTER_CATALOG = Object.freeze([
   {
     id: "nine-spirit-mentor",
     name: "九靈獅導師",
+    characterType: "functional-support",
+    featureId: "class-nebula",
     role: "班級共同星雲",
     alt: "九靈獅導師的八朵鬃毛環繞中央獅頭發光。",
     assets: characterAssets(
       "nine-spirit-mentor",
       "九靈獅導師守望班級共同照亮的匿名星雲。",
+    ),
+  },
+  {
+    id: "ink-cave-spider-seven",
+    name: "墨蛛小七",
+    characterType: "realm-primary",
+    role: "盤絲墨洞主要 NPC",
+    alt: "墨蛛小七用細短蛛足整理打結的文字絲。",
+    assets: characterAssets(
+      "ink-cave-spider-seven",
+      "墨蛛小七正在盤絲墨洞等你，文字任務仍可直接開始。",
+    ),
+  },
+  {
+    id: "wind-valley-green-horn",
+    name: "青角小牛妖",
+    characterType: "realm-primary",
+    role: "芭蕉風語谷主要 NPC",
+    alt: "青角小牛妖捧著風語葉，在芭蕉樹下側耳聆聽。",
+    assets: characterAssets(
+      "wind-valley-green-horn",
+      "青角小牛妖正在芭蕉風語谷等你，英文任務仍可直接開始。",
+    ),
+  },
+  {
+    id: "golden-ridge-tablet-turtle",
+    name: "負碑小龜妖",
+    characterType: "realm-primary",
+    role: "金箍算陣嶺主要 NPC",
+    alt: "負碑小龜妖背著三環石碑，沿著金環山路緩緩前行。",
+    assets: characterAssets(
+      "golden-ridge-tablet-turtle",
+      "負碑小龜妖正在金箍算陣嶺等你，數學任務仍可直接開始。",
     ),
   },
 ]);
