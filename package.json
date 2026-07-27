@@ -1,0 +1,19 @@
+{
+  "name": "self-learning-passport",
+  "version": "0.1.0",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "test": "node --test \"test/**/*.test.mjs\"",
+    "test:unit": "node --test \"test/domain/**/*.test.mjs\" \"test/storage/**/*.test.mjs\"",
+    "test:api": "node --test \"test/api/**/*.test.mjs\"",
+    "test:static": "node --test \"test/static/**/*.test.mjs\"",
+    "test:e2e": "playwright test",
+    "dev": "wrangler pages dev . --d1 PASSPORT_DB --port 8788",
+    "db:migrate:local": "wrangler d1 migrations apply PASSPORT_DB --local"
+  },
+  "devDependencies": {
+    "@playwright/test": "^1.62.0",
+    "wrangler": "^4.114.0"
+  }
+}
