@@ -1240,7 +1240,34 @@ function createPlatformCard(platform) {
     tags.append(node("span", { text }));
   }
 
-  link.append(
+  const art = node("figure", { className: "platform-card__art" });
+  const image = node("img", {
+    attributes: {
+      src: platform.art.src,
+      alt: platform.art.alt,
+      loading: "lazy",
+      decoding: "async",
+      width: "1280",
+      height: "801",
+    },
+  });
+  image.addEventListener(
+    "error",
+    () => {
+      art.classList.add("platform-card__art--fallback");
+      art.replaceChildren(
+        node("span", {
+          className: "platform-card__art-fallback",
+          text: platform.art.fallback,
+        }),
+      );
+    },
+    { once: true },
+  );
+  art.append(image);
+
+  const body = node("div", { className: "platform-card__body" });
+  body.append(
     top,
     node("p", { className: "platform-subject", text: platform.subject }),
     node("h3", { text: platform.title }),
@@ -1251,6 +1278,7 @@ function createPlatformCard(platform) {
     }),
     tags,
   );
+  link.append(art, body);
   return link;
 }
 

@@ -1,4 +1,5 @@
 import assert from "node:assert/strict";
+import { access } from "node:fs/promises";
 import test from "node:test";
 
 import {
@@ -26,7 +27,7 @@ test("平台來源保留 13 站，並明確排除唯一的會考平台", () => {
   );
 });
 
-test("每個可用平台都有角色、學習資訊與安全外連所需資料", () => {
+test("每個可用平台都有角色、學習資訊、配圖與安全外連所需資料", async () => {
   for (const platform of LEARNING_PLATFORM_CATALOG) {
     assert.ok(platform.title);
     assert.ok(platform.subject);
@@ -38,5 +39,9 @@ test("每個可用平台都有角色、學習資訊與安全外連所需資料",
     assert.match(platform.url, /^https:\/\//);
     assert.ok(Array.isArray(platform.audiences));
     assert.ok(platform.audiences.length > 0);
+    assert.match(platform.art.src, /^\/assets\/.+\.webp$/);
+    assert.ok(platform.art.alt);
+    assert.ok(platform.art.fallback);
+    await access(new URL(`../..${platform.art.src}`, import.meta.url));
   }
 });
