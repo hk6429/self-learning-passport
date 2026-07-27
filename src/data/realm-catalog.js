@@ -5,6 +5,11 @@ export const REALM_CATALOG = Object.freeze([
     siteId: "zizizhuji",
     subject: "language",
     primaryNpcId: "ink-cave-spider-seven",
+    art: Object.freeze({
+      src: "/assets/realms/ink-spider-cave-v3.webp",
+      alt: "墨蛛小七帶著兩位 Q 版小行者，在深藍盤絲墨洞解開發光字網並收集習光珠。",
+      fallback: "墨蛛小七已在字網旁等候，國語文航線仍可直接開始。",
+    }),
   }),
   Object.freeze({
     id: "plantain-word-valley",
@@ -12,6 +17,11 @@ export const REALM_CATALOG = Object.freeze([
     siteId: "vocab-duel",
     subject: "english",
     primaryNpcId: "wind-valley-green-horn",
+    art: Object.freeze({
+      src: "/assets/realms/plantain-word-valley-v3.webp",
+      alt: "青角小牛妖帶著兩位 Q 版小行者乘上巨大芭蕉葉，在風谷中捕捉發光風語葉。",
+      fallback: "青角小牛妖已乘風而來，英文航線仍可直接開始。",
+    }),
   }),
   Object.freeze({
     id: "golden-ring-math-ridge",
@@ -19,6 +29,11 @@ export const REALM_CATALOG = Object.freeze([
     siteId: "bxws-math",
     subject: "math",
     primaryNpcId: "golden-ridge-tablet-turtle",
+    art: Object.freeze({
+      src: "/assets/realms/golden-ring-math-ridge-v3.webp",
+      alt: "負碑小龜妖帶著兩位 Q 版小行者，在雲海山嶺排列發光金環並開啟算陣山路。",
+      fallback: "負碑小龜妖已守在金環旁，數學航線仍可直接開始。",
+    }),
   }),
   Object.freeze({
     id: "literati-ink-scroll",

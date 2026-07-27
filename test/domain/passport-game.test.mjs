@@ -1,0 +1,123 @@
+import assert from "node:assert/strict";
+import test from "node:test";
+
+import { MISSION_CATALOG } from "../../src/data/mission-catalog.js";
+import { createDefaultState } from "../../src/storage/local-store.js";
+import {
+  buildPassportSnapshot,
+  buildSupportMessage,
+  getLatestMystery,
+  recordPassportCheckIn,
+} from "../../src/domain/passport-game.js";
+
+const mission = MISSION_CATALOG.find(
+  ({ id }) => id === "ink-cave-first-thread",
+);
+
+test("完成或部分完成任務會落印，且同一任務同一天不重複計次", () => {
+  const initial = createDefaultState().student;
+  const occurredAt = "2026-07-27T12:00:00.000Z";
+
+  const first = recordPassportCheckIn(initial, {
+    mission,
+    status: "complete",
+    occurredAt,
+  });
+  const repeated = recordPassportCheckIn(first, {
+    mission,
+    status: "partial",
+    occurredAt,
+  });
+  const correctedToRest = recordPassportCheckIn(repeated, {
+    mission,
+    status: "rest",
+    occurredAt,
+  });
+
+  assert.deepEqual(first.activeDays, ["2026-07-27"]);
+  assert.equal(first.missionHistory["2026-07-27"].length, 1);
+  assert.equal(first.missionHistory["2026-07-27"][0].status, "complete");
+  assert.equal(repeated.missionHistory["2026-07-27"].length, 1);
+  assert.equal(repeated.missionHistory["2026-07-27"][0].status, "partial");
+  assert.deepEqual(
+    correctedToRest.activeDays,
+    [],
+    "同日誤按完成後改為休息，不應殘留活躍日",
+  );
+});
+
+test("老師與家長能產生不比較、不施壓的同行鼓勵卡", () => {
+  const teacherMessage = buildSupportMessage({
+    role: "teacher",
+    tone: "notice-effort",
+  });
+  const parentMessage = buildSupportMessage({
+    role: "parent",
+    tone: "offer-choice",
+  });
+
+  assert.match(teacherMessage, /我看見你願意開始/);
+  assert.match(parentMessage, /想走哪一條/);
+  assert.doesNotMatch(`${teacherMessage}${parentMessage}`, /排名|落後|必須連續/);
+  assert.throws(
+    () => buildSupportMessage({ role: "student", tone: "notice-effort" }),
+    RangeError,
+  );
+});
+
+test("完成後才揭曉對應妖域的神祕線索，休息不會被當成失敗", () => {
+  const completed = recordPassportCheckIn(createDefaultState().student, {
+    mission,
+    status: "complete",
+    occurredAt: "2026-07-27T12:00:00.000Z",
+  });
+  const rested = recordPassportCheckIn(createDefaultState().student, {
+    mission,
+    status: "rest",
+    occurredAt: "2026-07-27T12:00:00.000Z",
+  });
+
+  assert.match(getLatestMystery(completed).message, /字絲/);
+  assert.equal(getLatestMystery(rested), null);
+});
+
+test("複利護照把任務足跡換成習光、等級、妖印與下一個稀有解鎖", () => {
+  const student = createDefaultState().student;
+  student.northStar = "habit";
+  student.passport.sealId = "ink-tail";
+  student.missionHistory = {
+    "2026-07-25": [
+      {
+        missionId: "ink-cave-first-thread",
+        siteId: "zizizhuji",
+        durationMinutes: 5,
+        status: "complete",
+        revealId: "ink-cave-first-thread-reveal",
+      },
+    ],
+    "2026-07-26": [
+      {
+        missionId: "wind-valley-first-leaf",
+        siteId: "vocab-duel",
+        durationMinutes: 5,
+        status: "partial",
+        strategy: "shorter",
+        revealId: "wind-valley-first-leaf-reveal",
+      },
+    ],
+  };
+
+  const snapshot = buildPassportSnapshot(student);
+
+  assert.equal(snapshot.xp, 37);
+  assert.equal(snapshot.level, 1);
+  assert.equal(snapshot.stamps, 2);
+  assert.equal(snapshot.exploredRealms, 2);
+  assert.equal(snapshot.northStarLabel, "養成每天一小步");
+  assert.equal(snapshot.seal.label, "墨尾妖印");
+  assert.equal(snapshot.reveals.length, 2);
+  assert.equal(snapshot.nextRelic.unlockAt, 60);
+  assert.equal(snapshot.nextRelic.remainingXp, 23);
+  assert.ok(snapshot.badges.some(({ id }) => id === "first-step"));
+  assert.ok(snapshot.badges.some(({ id }) => id === "strategy-maker"));
+});

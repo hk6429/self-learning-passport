@@ -4,7 +4,7 @@ import test from "node:test";
 import { CHARACTER_CATALOG } from "../../src/data/character-catalog.js";
 import { REALM_CATALOG } from "../../src/data/realm-catalog.js";
 
-test("七個主域包含四個新增作品，且每域都有角色或專屬配圖", () => {
+test("七個主域都有一致的 16:10 敘事配圖", () => {
   assert.deepEqual(
     REALM_CATALOG.map(({ siteId }) => siteId),
     [
@@ -26,7 +26,7 @@ test("七個主域包含四個新增作品，且每域都有角色或專屬配�
   }
 
   const illustratedRealms = REALM_CATALOG.filter(({ art }) => art);
-  assert.equal(illustratedRealms.length, 4);
+  assert.equal(illustratedRealms.length, 7);
   for (const realm of illustratedRealms) {
     assert.match(realm.art.src, /^\/assets\/realms\/.+\.webp$/);
     assert.ok(realm.art.alt);
@@ -38,7 +38,15 @@ test("三個角色主域的 siteId、subject 與主要 NPC 對應固定且唯一
   const characterRealms = REALM_CATALOG.filter(
     ({ primaryNpcId }) => primaryNpcId,
   );
-  assert.deepEqual(characterRealms, [
+  assert.deepEqual(characterRealms.map(
+    ({ id, name, siteId, subject, primaryNpcId }) => ({
+      id,
+      name,
+      siteId,
+      subject,
+      primaryNpcId,
+    }),
+  ), [
     {
       id: "ink-spider-cave",
       name: "盤絲墨洞",

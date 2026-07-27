@@ -17,6 +17,9 @@ export function createDefaultState() {
       },
       activeDays: [],
       missionHistory: {},
+      passport: {
+        sealId: "ink-tail",
+      },
       encouragement: {
         message: "",
         helpfulness: null,

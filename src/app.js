@@ -1,6 +1,16 @@
 import { buildHomeState } from "./domain/home-state.js";
 import { getPlatformsForRole } from "./domain/platform-guide.js";
 import { getReturnVoyage, getSevenLights } from "./domain/progress.js";
+import {
+  NORTH_STAR_OPTIONS,
+  PASSPORT_SEALS,
+  SUPPORT_TONES,
+  buildPassportSnapshot,
+  buildSupportMessage,
+  getLatestMystery,
+  recordPassportCheckIn,
+} from "./domain/passport-game.js";
+import { STRATEGY_OPTIONS } from "./domain/strategy-lab.js";
 import { selectRoleInterface } from "./ui/router.js";
 import { createRealmCard } from "./ui/realm-card.js";
 import { createLocalStore } from "./storage/local-store.js";
@@ -33,6 +43,13 @@ const PLATFORM_GROUP_LABELS = Object.freeze({
   teacher: "引路仙門",
 });
 
+const taipeiDateFormatter = new Intl.DateTimeFormat("en-CA", {
+  timeZone: "Asia/Taipei",
+  year: "numeric",
+  month: "2-digit",
+  day: "2-digit",
+});
+
 function node(tagName, { className = "", text = "", attributes = {} } = {}) {
   const element = document.createElement(tagName);
   element.className = className;
@@ -48,6 +65,27 @@ function saveLocalState() {
   if (!result.ok) {
     console.warn("本機旅程暫時無法儲存。", result.status);
   }
+}
+
+function getTodayReport(missionId) {
+  const dateKey = taipeiDateFormatter.format(new Date());
+  const stored = localState.student.missionHistory?.[dateKey];
+  const reports = Array.isArray(stored) ? stored : stored ? [stored] : [];
+  return reports.find((report) => report.missionId === missionId) ?? null;
+}
+
+function checkInMission(mission, status, additions = {}) {
+  localState = {
+    ...localState,
+    student: recordPassportCheckIn(localState.student, {
+      mission,
+      status,
+      occurredAt: new Date().toISOString(),
+      ...additions,
+    }),
+  };
+  saveLocalState();
+  render();
 }
 
 function shouldReduceMotion() {
@@ -216,10 +254,343 @@ function createStudentHero(home, mission, focusMode) {
       className: "mission-note",
       text: "完成多少都可以回來落印；系統不會讀取外站成績。",
     }),
+    createMissionReturnPanel(mission),
   );
 
   hero.append(stage, scroll);
   return hero;
+}
+
+function createMissionReturnPanel(mission) {
+  const report = getTodayReport(mission.id);
+  const panel = node("section", {
+    className: "mission-return",
+    attributes: { "aria-label": "回到護照落印" },
+  });
+  panel.append(
+    node("strong", { text: "回到護照落印" }),
+    node("p", {
+      text: report
+        ? report.status === "complete"
+          ? "已完成今日航線，習光與神祕線索都收進護照了。"
+          : report.status === "partial"
+            ? "走到哪裡都算數。挑一個下次想試的方法吧。"
+            : "今天安心歇腳，走過的路與收藏都不會消失。"
+        : "從外站回來後，選擇最符合今天情況的一項。",
+    }),
+  );
+
+  const choices = node("div", {
+    className: "checkin-options",
+    attributes: { role: "group", "aria-label": "今日任務狀態" },
+  });
+  for (const option of [
+    { id: "complete", label: "完成了" },
+    { id: "partial", label: "做了一部分" },
+    { id: "rest", label: "今天先休息" },
+  ]) {
+    const button = node("button", {
+      className: "checkin-button",
+      text: option.label,
+      attributes: {
+        type: "button",
+        "aria-pressed": String(report?.status === option.id),
+      },
+    });
+    button.addEventListener("click", () => checkInMission(mission, option.id));
+    choices.append(button);
+  }
+  panel.append(choices);
+
+  if (report?.status === "partial") {
+    const strategy = node("div", { className: "strategy-lab" });
+    strategy.append(
+      node("span", { text: "下次換個走法：" }),
+    );
+    for (const option of STRATEGY_OPTIONS) {
+      const button = node("button", {
+        text: option.label,
+        attributes: {
+          type: "button",
+          "aria-pressed": String(report.strategy === option.id),
+          title: option.guidance,
+        },
+      });
+      button.addEventListener("click", () =>
+        checkInMission(mission, "partial", {
+          strategy: option.id,
+          reflection: report.reflection ?? "",
+        }),
+      );
+      strategy.append(button);
+    }
+    panel.append(strategy);
+  }
+
+  if (report && report.status !== "rest") {
+    const reflection = node("label", { className: "reflection-field" });
+    reflection.append(
+      node("span", { text: mission.completionPrompt }),
+    );
+    const input = node("input", {
+      attributes: {
+        type: "text",
+        maxlength: "120",
+        placeholder: "可留白，只記在這台裝置",
+        value: report.reflection ?? "",
+      },
+    });
+    input.value = report.reflection ?? "";
+    const save = node("button", {
+      text: "保存我的發現",
+      attributes: { type: "button" },
+    });
+    save.addEventListener("click", () =>
+      checkInMission(mission, report.status, {
+        strategy: report.strategy ?? null,
+        reflection: input.value.trim(),
+      }),
+    );
+    reflection.append(input, save);
+    panel.append(reflection);
+  }
+
+  return panel;
+}
+
+function createPassportSection() {
+  const snapshot = buildPassportSnapshot(localState.student);
+  const section = node("section", {
+    className: "passport-section",
+    attributes: { "aria-labelledby": "passport-heading" },
+  });
+  const heading = node("header", { className: "passport-heading" });
+  const headingCopy = node("div");
+  headingCopy.append(
+    node("p", { className: "eyebrow", text: "我的成長資產" }),
+    node("h2", {
+      text: "我的複利護照",
+      attributes: { id: "passport-heading" },
+    }),
+    node("p", {
+      text: "每一次完成、部分完成與安心回航，都會留下自己的路；沒有排行，也不會因中斷而歸零。",
+    }),
+  );
+  heading.append(
+    node("span", {
+      className: "passport-seal-preview",
+      text: snapshot.seal.glyph,
+      attributes: { "aria-label": snapshot.seal.label },
+    }),
+    headingCopy,
+  );
+
+  const metrics = node("div", { className: "passport-metrics" });
+  for (const [value, label] of [
+    [snapshot.xp, "習光"],
+    [snapshot.level, "護照等級"],
+    [snapshot.stamps, "任務妖印"],
+    [snapshot.exploredRealms, "已探索主域"],
+  ]) {
+    const metric = node("article", { className: "passport-metric" });
+    metric.append(
+      node("strong", { text: String(value) }),
+      node("span", { text: label }),
+    );
+    metrics.append(metric);
+  }
+
+  const progress = node("div", {
+    className: "passport-progress",
+    attributes: {
+      role: "progressbar",
+      "aria-label": "下一等級進度",
+      "aria-valuemin": "0",
+      "aria-valuemax": "100",
+      "aria-valuenow": String(snapshot.levelProgress),
+    },
+  });
+  const progressFill = node("span");
+  progressFill.style.width = `${snapshot.levelProgress}%`;
+  progress.append(progressFill);
+
+  const settings = node("div", { className: "passport-settings" });
+  const northStar = node("fieldset", { className: "passport-choice" });
+  northStar.append(node("legend", { text: "我的北極星" }));
+  for (const option of NORTH_STAR_OPTIONS) {
+    const button = node("button", {
+      text: option.label,
+      attributes: {
+        type: "button",
+        "aria-pressed": String(localState.student.northStar === option.id),
+      },
+    });
+    button.addEventListener("click", () => {
+      localState = {
+        ...localState,
+        student: { ...localState.student, northStar: option.id },
+      };
+      saveLocalState();
+      render();
+    });
+    northStar.append(button);
+  }
+
+  const seals = node("fieldset", { className: "passport-choice" });
+  seals.append(node("legend", { text: "我的專屬妖印" }));
+  for (const option of PASSPORT_SEALS) {
+    const button = node("button", {
+      text: `${option.glyph} ${option.label}`,
+      attributes: {
+        type: "button",
+        "aria-pressed": String(snapshot.seal.id === option.id),
+      },
+    });
+    button.addEventListener("click", () => {
+      localState = {
+        ...localState,
+        student: {
+          ...localState.student,
+          passport: {
+            ...(localState.student.passport ?? {}),
+            sealId: option.id,
+          },
+        },
+      };
+      saveLocalState();
+      render();
+    });
+    seals.append(button);
+  }
+  settings.append(northStar, seals);
+
+  const collection = node("div", { className: "passport-collection" });
+  const badgeCard = node("article");
+  badgeCard.append(node("h3", { text: "成長徽記" }));
+  const badges = node("div", { className: "badge-list" });
+  if (snapshot.badges.length === 0) {
+    badges.append(node("span", { text: "完成第一小步，就會獲得第一枚徽記。" }));
+  } else {
+    for (const badge of snapshot.badges) {
+      badges.append(node("span", { text: badge.label }));
+    }
+  }
+  badgeCard.append(badges);
+
+  const relicCard = node("article");
+  relicCard.append(node("h3", { text: "稀有收藏" }));
+  const relics = node("div", { className: "relic-list" });
+  for (const relic of snapshot.unlockedRelics) {
+    relics.append(node("span", { text: `已解鎖・${relic.label}` }));
+  }
+  if (snapshot.nextRelic) {
+    relics.append(
+      node("span", {
+        text: `再累積 ${snapshot.nextRelic.remainingXp} 習光，解鎖 ${snapshot.nextRelic.label}`,
+      }),
+    );
+  }
+  relicCard.append(relics);
+
+  const mysteryCard = node("article", { className: "mystery-card" });
+  const mystery = getLatestMystery(localState.student);
+  mysteryCard.append(
+    node("h3", { text: "神祕線索" }),
+    node("p", {
+      text: mystery?.message ?? "完成或部分完成一條航線，霧海才會揭開下一句密語。",
+    }),
+  );
+  collection.append(badgeCard, relicCard, mysteryCard);
+
+  section.append(heading, metrics, progress, settings, collection);
+  if (localState.student.encouragement?.message) {
+    const encouragement = node("blockquote", {
+      className: "encouragement-card",
+      text: localState.student.encouragement.message,
+    });
+    encouragement.append(
+      node("footer", { text: "同行者留給你的話" }),
+    );
+    section.append(encouragement);
+  }
+  return section;
+}
+
+function createSupportStudio(activeRole) {
+  const section = node("section", {
+    className: "support-studio",
+    attributes: { "aria-labelledby": `${activeRole}-support-heading` },
+  });
+  section.append(
+    node("p", { className: "eyebrow", text: "社交支持・不排名" }),
+    node("h2", {
+      text: "製作一張同行鼓勵卡",
+      attributes: { id: `${activeRole}-support-heading` },
+    }),
+    node("p", {
+      text: "選一句真正能支持孩子的話。鼓勵會留在這台裝置，也能複製後傳給對方。",
+    }),
+  );
+
+  const toneOptions = node("div", {
+    className: "support-tone-options",
+    attributes: { role: "group", "aria-label": "鼓勵語氣" },
+  });
+  const preview = node("blockquote", {
+    className: "encouragement-card",
+    text:
+      localState.student.encouragement?.message ??
+      buildSupportMessage({ role: activeRole, tone: SUPPORT_TONES[0].id }),
+  });
+  const status = node("p", {
+    className: "support-status",
+    attributes: { "aria-live": "polite" },
+  });
+
+  for (const tone of SUPPORT_TONES) {
+    const button = node("button", {
+      text: tone.label,
+      attributes: { type: "button" },
+    });
+    button.addEventListener("click", () => {
+      const message = buildSupportMessage({
+        role: activeRole,
+        tone: tone.id,
+      });
+      localState = {
+        ...localState,
+        student: {
+          ...localState.student,
+          encouragement: {
+            message,
+            helpfulness: null,
+            updatedAt: new Date().toISOString(),
+          },
+        },
+      };
+      saveLocalState();
+      preview.textContent = message;
+      status.textContent = "鼓勵卡已放進學生護照。";
+    });
+    toneOptions.append(button);
+  }
+
+  const copy = node("button", {
+    className: "support-copy",
+    text: "複製鼓勵卡",
+    attributes: { type: "button" },
+  });
+  copy.addEventListener("click", async () => {
+    try {
+      await navigator.clipboard.writeText(preview.textContent);
+      status.textContent = "已複製，可以傳給對方了。";
+    } catch {
+      status.textContent = "瀏覽器無法自動複製，請直接選取上方文字。";
+    }
+  });
+
+  section.append(toneOptions, preview, copy, status);
+  return section;
 }
 
 function createRestorativeBanner(home, mission) {
@@ -359,9 +730,9 @@ function createPlatformSection(activeRole, { includeCore = false } = {}) {
     },
     teacher: {
       eyebrow: "完整站群",
-      title: "把十二個非會考平台帶進教學現場",
+      title: "七個主域與五個延伸平台",
       description:
-        "上方七座主域適合每日任務；下方支線補上閱讀解謎、習慣經營與教師專業成長。",
+        "上方七座主域適合每日任務；下方五個延伸平台補上閱讀解謎、習慣經營與教師專業成長。",
     },
     parent: {
       eyebrow: "親子選路",
@@ -420,7 +791,7 @@ function createRealmSection(home, activeRole) {
       text:
         activeRole === "teacher"
           ? "所有任務都來自固定白名單；選擇時長，只安排合宜的共同節奏。"
-          : "國語文、英文、數學各有三種時長。沒有最強路線，只有今天最合適的那一條。",
+          : "七座主域都有 5、10、15 分鐘航線。沒有最強路線，只有今天最合適的那一條。",
     }),
   );
 
@@ -567,6 +938,7 @@ function render() {
         localState.student.visualPreference.focusMode,
       ),
       createRestorativeBanner(home, mission),
+      createPassportSection(),
       createRealmSection(home, activeRole),
       createPlatformSection(activeRole),
     );
@@ -574,12 +946,14 @@ function render() {
     shell.append(createRoleNotice(activeRole));
     if (activeRole === "teacher") {
       shell.append(
+        createSupportStudio(activeRole),
         createRealmSection(home, activeRole),
         createPlatformSection(activeRole),
       );
     }
     if (activeRole === "parent") {
       shell.append(
+        createSupportStudio(activeRole),
         createPlatformSection(activeRole, { includeCore: true }),
       );
     }

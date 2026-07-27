@@ -371,6 +371,39 @@
       "approved": true
     },
     {
+      "id": "realm-art-ink-spider-cave-v3",
+      "kind": "realm-art",
+      "path": "assets/realms/ink-spider-cave-v3.webp",
+      "ratio": "16:10",
+      "role": "盤絲墨洞主域入口",
+      "alt": "墨蛛小七帶著兩位 Q 版小行者，在深藍盤絲墨洞解開發光字網並收集習光珠。",
+      "promptVersion": 3,
+      "referenceIds": ["style-anchor-beast-v3"],
+      "approved": true
+    },
+    {
+      "id": "realm-art-plantain-word-valley-v3",
+      "kind": "realm-art",
+      "path": "assets/realms/plantain-word-valley-v3.webp",
+      "ratio": "16:10",
+      "role": "芭蕉風語谷主域入口",
+      "alt": "青角小牛妖帶著兩位 Q 版小行者乘上巨大芭蕉葉，在風谷中捕捉發光風語葉。",
+      "promptVersion": 3,
+      "referenceIds": ["style-anchor-beast-v3"],
+      "approved": true
+    },
+    {
+      "id": "realm-art-golden-ring-math-ridge-v3",
+      "kind": "realm-art",
+      "path": "assets/realms/golden-ring-math-ridge-v3.webp",
+      "ratio": "16:10",
+      "role": "金箍算陣嶺主域入口",
+      "alt": "負碑小龜妖帶著兩位 Q 版小行者，在雲海山嶺排列發光金環並開啟算陣山路。",
+      "promptVersion": 3,
+      "referenceIds": ["style-anchor-beast-v3"],
+      "approved": true
+    },
+    {
       "id": "realm-art-wenhao-xiaozhuan-v2",
       "kind": "realm-art",
       "path": "assets/realms/wenhao-xiaozhuan-v2.webp",

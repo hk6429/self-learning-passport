@@ -50,6 +50,44 @@ test("三身份都有平台入口，家長不再只看見空白說明", async ()
   assert.match(styles, /\.platform-card/);
 });
 
+test("教師頁清楚區分上方七主域與下方五個延伸平台", async () => {
+  const app = await readProjectFile("src/app.js");
+
+  assert.match(app, /七個主域與五個延伸平台/);
+  assert.match(app, /下方五個延伸平台/);
+  assert.doesNotMatch(app, /把十二個非會考平台帶進教學現場/);
+});
+
+test("學生能完成回站落印並看見個人護照、稀有解鎖與神祕線索", async () => {
+  const [app, styles] = await Promise.all([
+    readProjectFile("src/app.js"),
+    readProjectFile("styles.css"),
+  ]);
+
+  assert.match(app, /recordPassportCheckIn/);
+  assert.match(app, /buildPassportSnapshot/);
+  assert.match(app, /回到護照落印/);
+  assert.match(app, /我的複利護照/);
+  assert.match(app, /稀有收藏/);
+  assert.match(app, /神祕線索/);
+  assert.match(styles, /\.mission-return/);
+  assert.match(styles, /\.passport-section/);
+  assert.match(styles, /\.passport-progress/);
+});
+
+test("老師與家長可製作同行鼓勵卡，學生端能看見鼓勵", async () => {
+  const [app, styles] = await Promise.all([
+    readProjectFile("src/app.js"),
+    readProjectFile("styles.css"),
+  ]);
+
+  assert.match(app, /buildSupportMessage/);
+  assert.match(app, /同行鼓勵卡/);
+  assert.match(app, /navigator\.clipboard/);
+  assert.match(styles, /\.support-studio/);
+  assert.match(styles, /\.encouragement-card/);
+});
+
 test("主視覺角色圖不使用會侵入標題欄的負邊界", async () => {
   const styles = await readProjectFile("styles.css");
   const guideRule = styles.match(/\.guide-figure\s*\{([^}]*)\}/)?.[1] ?? "";

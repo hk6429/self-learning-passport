@@ -78,7 +78,7 @@ function realmViewModel(siteId, overrides = {}) {
   };
 }
 
-test("安全建立含主要 NPC、妖域資訊與三條航線的可讀卡片", () => {
+test("安全建立含橫幅敘事圖、妖域資訊與三條航線的可讀卡片", () => {
   const fake = createFakeDocument();
   const selectedMissionIds = [];
   const model = realmViewModel("vocab-duel", {
@@ -104,13 +104,10 @@ test("安全建立含主要 NPC、妖域資訊與三條航線的可讀卡片", (
   )[0];
   assert.equal(subject.textContent, "英文");
 
-  const npc = CHARACTER_CATALOG.find(
-    ({ id }) => id === model.primaryNpcId,
-  );
   const images = findAll(card, ({ tagName }) => tagName === "img");
   assert.equal(images.length, 1);
-  assert.equal(images[0].src, npc.assets.idle);
-  assert.equal(images[0].alt, npc.stateText.idle.alt);
+  assert.equal(images[0].src, model.art.src);
+  assert.equal(images[0].alt, model.art.alt);
 
   const buttons = findAll(card, ({ tagName }) => tagName === "button");
   assert.deepEqual(
@@ -147,7 +144,7 @@ test("NPC 圖片失敗與未知角色都轉為可讀文字 fallback", () => {
   const knownFake = createFakeDocument();
   const knownCard = createRealmCard(
     knownFake.documentAdapter,
-    realmViewModel("zizizhuji"),
+    realmViewModel("zizizhuji", { art: null }),
   );
   const image = findAll(knownCard, ({ tagName }) => tagName === "img")[0];
   const knownFallback = findAll(
@@ -168,6 +165,7 @@ test("NPC 圖片失敗與未知角色都轉為可讀文字 fallback", () => {
     unknownFake.documentAdapter,
     realmViewModel("bxws-math", {
       primaryNpcId: "unknown-realm-npc",
+      art: null,
     }),
   );
   assert.equal(
