@@ -9,5 +9,6 @@ tmp/
 output/
 .DS_Store
 assets/references/candidates/
+assets/references/review/
 assets/characters/*/source-*/
 assets/characters/*/*-r[0-9].webp
