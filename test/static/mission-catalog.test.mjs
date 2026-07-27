@@ -34,6 +34,7 @@ test("每筆任務都有完整且可引用的唯一資料契約", () => {
     "stage",
     "url",
     "completionPrompt",
+    "curiosityPrompt",
     "curiosityPromptId",
     "revealId",
     "routeLevel",
@@ -144,5 +145,16 @@ test("妖域、學科與正式入口的對應不可被任務資料改寫", () =>
   for (const field of uniqueFields) {
     const values = MISSION_CATALOG.map((mission) => mission[field]);
     assert.equal(new Set(values).size, values.length, `${field} 不可重複`);
+  }
+});
+
+test("每條航線都有可直接顯示且不製造獎品懸念的內容線索", () => {
+  for (const mission of MISSION_CATALOG) {
+    assert.ok(Array.from(mission.curiosityPrompt).length <= 30);
+    assert.match(mission.curiosityPrompt, /[？?]$/);
+    assert.doesNotMatch(
+      mission.curiosityPrompt,
+      /獎品|寶箱|稀有|抽卡|限時|錯過/,
+    );
   }
 });
