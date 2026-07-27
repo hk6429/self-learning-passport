@@ -135,3 +135,18 @@ test("三位妖域主要 NPC 是獨立角色，不使用功能角色作 alias", 
     "火雲小將不可冒充青角小牛妖",
   );
 });
+
+test("三位妖域主要 NPC 都提供四狀態精準文字", () => {
+  const states = ["idle", "focus", "celebrate", "recover"];
+  const primaryCharacters = CHARACTER_CATALOG.filter(
+    ({ characterType }) => characterType === "realm-primary",
+  );
+
+  for (const character of primaryCharacters) {
+    assert.deepEqual(Object.keys(character.stateText).sort(), [...states].sort());
+    for (const state of states) {
+      assert.ok(character.stateText[state].alt);
+      assert.ok(character.stateText[state].fallback);
+    }
+  }
+});

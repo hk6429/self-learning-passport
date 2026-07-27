@@ -87,6 +87,288 @@
       "promptVersion": 3,
       "referenceIds": ["style-anchor-beast-v3"],
       "approved": true
+    },
+    {
+      "id": "character-ink-cave-spider-seven-idle-v1",
+      "kind": "character",
+      "characterId": "ink-cave-spider-seven",
+      "state": "idle",
+      "version": 1,
+      "path": "assets/characters/ink-cave-spider-seven/idle.webp",
+      "sources": [
+        {"width": 256, "path": "assets/characters/ink-cave-spider-seven/idle-256.webp"},
+        {"width": 512, "path": "assets/characters/ink-cave-spider-seven/idle-512.webp"},
+        {"width": 1024, "path": "assets/characters/ink-cave-spider-seven/idle.webp"}
+      ],
+      "ratio": "1:1",
+      "role": "盤絲墨洞主要 NPC",
+      "alt": "墨蛛小七展開四條絨蛛臂，捧著字網竹框安靜等候。",
+      "promptVersion": 1,
+      "referenceIds": ["style-anchor-beast-v3"],
+      "approved": true
+    },
+    {
+      "id": "character-ink-cave-spider-seven-focus-v1",
+      "kind": "character",
+      "characterId": "ink-cave-spider-seven",
+      "state": "focus",
+      "version": 1,
+      "path": "assets/characters/ink-cave-spider-seven/focus.webp",
+      "sources": [
+        {"width": 256, "path": "assets/characters/ink-cave-spider-seven/focus-256.webp"},
+        {"width": 512, "path": "assets/characters/ink-cave-spider-seven/focus-512.webp"},
+        {"width": 1024, "path": "assets/characters/ink-cave-spider-seven/focus.webp"}
+      ],
+      "ratio": "1:1",
+      "role": "專注整理字網",
+      "alt": "墨蛛小七用上方雙臂指向竹框，專注整理字網。",
+      "promptVersion": 1,
+      "referenceIds": ["style-anchor-beast-v3"],
+      "approved": true
+    },
+    {
+      "id": "character-ink-cave-spider-seven-celebrate-v1",
+      "kind": "character",
+      "characterId": "ink-cave-spider-seven",
+      "state": "celebrate",
+      "version": 1,
+      "path": "assets/characters/ink-cave-spider-seven/celebrate.webp",
+      "sources": [
+        {"width": 256, "path": "assets/characters/ink-cave-spider-seven/celebrate-256.webp"},
+        {"width": 512, "path": "assets/characters/ink-cave-spider-seven/celebrate-512.webp"},
+        {"width": 1024, "path": "assets/characters/ink-cave-spider-seven/celebrate.webp"}
+      ],
+      "ratio": "1:1",
+      "role": "慶祝字網復甦",
+      "alt": "墨蛛小七小幅舉起絨蛛臂，慶祝文字網亮起一段。",
+      "promptVersion": 1,
+      "referenceIds": ["style-anchor-beast-v3"],
+      "approved": true
+    },
+    {
+      "id": "character-ink-cave-spider-seven-recover-v1",
+      "kind": "character",
+      "characterId": "ink-cave-spider-seven",
+      "state": "recover",
+      "version": 1,
+      "path": "assets/characters/ink-cave-spider-seven/recover.webp",
+      "sources": [
+        {"width": 256, "path": "assets/characters/ink-cave-spider-seven/recover-256.webp"},
+        {"width": 512, "path": "assets/characters/ink-cave-spider-seven/recover-512.webp"},
+        {"width": 1024, "path": "assets/characters/ink-cave-spider-seven/recover.webp"}
+      ],
+      "ratio": "1:1",
+      "role": "中斷後安心回航",
+      "alt": "墨蛛小七坐低身子，用四條絨蛛臂安心抱著竹框。",
+      "promptVersion": 1,
+      "referenceIds": ["style-anchor-beast-v3"],
+      "approved": true
+    },
+    {
+      "id": "avatar-ink-cave-spider-seven-v1",
+      "kind": "avatar",
+      "characterId": "ink-cave-spider-seven",
+      "state": "avatar",
+      "version": 1,
+      "path": "assets/characters/ink-cave-spider-seven/avatar.webp",
+      "sources": [
+        {"width": 128, "path": "assets/characters/ink-cave-spider-seven/avatar-128.webp"},
+        {"width": 256, "path": "assets/characters/ink-cave-spider-seven/avatar.webp"}
+      ],
+      "ratio": "1:1",
+      "role": "盤絲墨洞角色頭像",
+      "alt": "墨蛛小七的七珠額飾、琥珀眼與絨蛛臂頭像。",
+      "promptVersion": 1,
+      "referenceIds": ["style-anchor-beast-v3"],
+      "approved": true
+    },
+    {
+      "id": "character-wind-valley-green-horn-idle-v1",
+      "kind": "character",
+      "characterId": "wind-valley-green-horn",
+      "state": "idle",
+      "version": 1,
+      "path": "assets/characters/wind-valley-green-horn/idle.webp",
+      "sources": [
+        {"width": 256, "path": "assets/characters/wind-valley-green-horn/idle-256.webp"},
+        {"width": 512, "path": "assets/characters/wind-valley-green-horn/idle-512.webp"},
+        {"width": 1024, "path": "assets/characters/wind-valley-green-horn/idle.webp"}
+      ],
+      "ratio": "1:1",
+      "role": "芭蕉風語谷主要 NPC",
+      "alt": "青角小牛妖捧著風語葉笛，在谷口安靜等候。",
+      "promptVersion": 1,
+      "referenceIds": ["style-anchor-beast-v3"],
+      "approved": true
+    },
+    {
+      "id": "character-wind-valley-green-horn-focus-v1",
+      "kind": "character",
+      "characterId": "wind-valley-green-horn",
+      "state": "focus",
+      "version": 1,
+      "path": "assets/characters/wind-valley-green-horn/focus.webp",
+      "sources": [
+        {"width": 256, "path": "assets/characters/wind-valley-green-horn/focus-256.webp"},
+        {"width": 512, "path": "assets/characters/wind-valley-green-horn/focus-512.webp"},
+        {"width": 1024, "path": "assets/characters/wind-valley-green-horn/focus.webp"}
+      ],
+      "ratio": "1:1",
+      "role": "專注聽風辨字",
+      "alt": "青角小牛妖把葉笛靠近牛鼻，專注聽風中的聲音。",
+      "promptVersion": 1,
+      "referenceIds": ["style-anchor-beast-v3"],
+      "approved": true
+    },
+    {
+      "id": "character-wind-valley-green-horn-celebrate-v1",
+      "kind": "character",
+      "characterId": "wind-valley-green-horn",
+      "state": "celebrate",
+      "version": 1,
+      "path": "assets/characters/wind-valley-green-horn/celebrate.webp",
+      "sources": [
+        {"width": 256, "path": "assets/characters/wind-valley-green-horn/celebrate-256.webp"},
+        {"width": 512, "path": "assets/characters/wind-valley-green-horn/celebrate-512.webp"},
+        {"width": 1024, "path": "assets/characters/wind-valley-green-horn/celebrate.webp"}
+      ],
+      "ratio": "1:1",
+      "role": "慶祝風語葉回歸",
+      "alt": "青角小牛妖微抬一隻前蹄，開心迎接回來的風語葉。",
+      "promptVersion": 1,
+      "referenceIds": ["style-anchor-beast-v3"],
+      "approved": true
+    },
+    {
+      "id": "character-wind-valley-green-horn-recover-v1",
+      "kind": "character",
+      "characterId": "wind-valley-green-horn",
+      "state": "recover",
+      "version": 1,
+      "path": "assets/characters/wind-valley-green-horn/recover.webp",
+      "sources": [
+        {"width": 256, "path": "assets/characters/wind-valley-green-horn/recover-256.webp"},
+        {"width": 512, "path": "assets/characters/wind-valley-green-horn/recover-512.webp"},
+        {"width": 1024, "path": "assets/characters/wind-valley-green-horn/recover.webp"}
+      ],
+      "ratio": "1:1",
+      "role": "中斷後安心回航",
+      "alt": "青角小牛妖坐低身子，抱著風語葉笛安心歇腳。",
+      "promptVersion": 1,
+      "referenceIds": ["style-anchor-beast-v3"],
+      "approved": true
+    },
+    {
+      "id": "avatar-wind-valley-green-horn-v1",
+      "kind": "avatar",
+      "characterId": "wind-valley-green-horn",
+      "state": "avatar",
+      "version": 1,
+      "path": "assets/characters/wind-valley-green-horn/avatar.webp",
+      "sources": [
+        {"width": 128, "path": "assets/characters/wind-valley-green-horn/avatar-128.webp"},
+        {"width": 256, "path": "assets/characters/wind-valley-green-horn/avatar.webp"}
+      ],
+      "ratio": "1:1",
+      "role": "芭蕉風語谷角色頭像",
+      "alt": "青角小牛妖的青玉雙角、垂耳與奶白牛鼻頭像。",
+      "promptVersion": 1,
+      "referenceIds": ["style-anchor-beast-v3"],
+      "approved": true
+    },
+    {
+      "id": "character-golden-ridge-tablet-turtle-idle-v1",
+      "kind": "character",
+      "characterId": "golden-ridge-tablet-turtle",
+      "state": "idle",
+      "version": 1,
+      "path": "assets/characters/golden-ridge-tablet-turtle/idle.webp",
+      "sources": [
+        {"width": 256, "path": "assets/characters/golden-ridge-tablet-turtle/idle-256.webp"},
+        {"width": 512, "path": "assets/characters/golden-ridge-tablet-turtle/idle-512.webp"},
+        {"width": 1024, "path": "assets/characters/golden-ridge-tablet-turtle/idle.webp"}
+      ],
+      "ratio": "1:1",
+      "role": "金箍算陣嶺主要 NPC",
+      "alt": "負碑小龜妖背著三環石碑，在算陣嶺安靜等候。",
+      "promptVersion": 1,
+      "referenceIds": ["style-anchor-beast-v3"],
+      "approved": true
+    },
+    {
+      "id": "character-golden-ridge-tablet-turtle-focus-v1",
+      "kind": "character",
+      "characterId": "golden-ridge-tablet-turtle",
+      "state": "focus",
+      "version": 1,
+      "path": "assets/characters/golden-ridge-tablet-turtle/focus.webp",
+      "sources": [
+        {"width": 256, "path": "assets/characters/golden-ridge-tablet-turtle/focus-256.webp"},
+        {"width": 512, "path": "assets/characters/golden-ridge-tablet-turtle/focus-512.webp"},
+        {"width": 1024, "path": "assets/characters/golden-ridge-tablet-turtle/focus.webp"}
+      ],
+      "ratio": "1:1",
+      "role": "專注尋找算陣規律",
+      "alt": "負碑小龜妖抬起頭與前足，專注指出山路規律。",
+      "promptVersion": 1,
+      "referenceIds": ["style-anchor-beast-v3"],
+      "approved": true
+    },
+    {
+      "id": "character-golden-ridge-tablet-turtle-celebrate-v1",
+      "kind": "character",
+      "characterId": "golden-ridge-tablet-turtle",
+      "state": "celebrate",
+      "version": 1,
+      "path": "assets/characters/golden-ridge-tablet-turtle/celebrate.webp",
+      "sources": [
+        {"width": 256, "path": "assets/characters/golden-ridge-tablet-turtle/celebrate-256.webp"},
+        {"width": 512, "path": "assets/characters/golden-ridge-tablet-turtle/celebrate-512.webp"},
+        {"width": 1024, "path": "assets/characters/golden-ridge-tablet-turtle/celebrate.webp"}
+      ],
+      "ratio": "1:1",
+      "role": "慶祝金環轉正",
+      "alt": "負碑小龜妖抬高頭與前足，慶祝金環轉正一格。",
+      "promptVersion": 1,
+      "referenceIds": ["style-anchor-beast-v3"],
+      "approved": true
+    },
+    {
+      "id": "character-golden-ridge-tablet-turtle-recover-v1",
+      "kind": "character",
+      "characterId": "golden-ridge-tablet-turtle",
+      "state": "recover",
+      "version": 1,
+      "path": "assets/characters/golden-ridge-tablet-turtle/recover.webp",
+      "sources": [
+        {"width": 256, "path": "assets/characters/golden-ridge-tablet-turtle/recover-256.webp"},
+        {"width": 512, "path": "assets/characters/golden-ridge-tablet-turtle/recover-512.webp"},
+        {"width": 1024, "path": "assets/characters/golden-ridge-tablet-turtle/recover.webp"}
+      ],
+      "ratio": "1:1",
+      "role": "中斷後安心回航",
+      "alt": "負碑小龜妖放低頭、收攏短足，在石碑下安心歇腳。",
+      "promptVersion": 1,
+      "referenceIds": ["style-anchor-beast-v3"],
+      "approved": true
+    },
+    {
+      "id": "avatar-golden-ridge-tablet-turtle-v1",
+      "kind": "avatar",
+      "characterId": "golden-ridge-tablet-turtle",
+      "state": "avatar",
+      "version": 1,
+      "path": "assets/characters/golden-ridge-tablet-turtle/avatar.webp",
+      "sources": [
+        {"width": 128, "path": "assets/characters/golden-ridge-tablet-turtle/avatar-128.webp"},
+        {"width": 256, "path": "assets/characters/golden-ridge-tablet-turtle/avatar.webp"}
+      ],
+      "ratio": "1:1",
+      "role": "金箍算陣嶺角色頭像",
+      "alt": "負碑小龜妖的圓鈍龜頭、六角龜甲與三環石碑頭像。",
+      "promptVersion": 1,
+      "referenceIds": ["style-anchor-beast-v3"],
+      "approved": true
     }
   ]
 }

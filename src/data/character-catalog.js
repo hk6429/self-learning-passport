@@ -28,6 +28,63 @@ const inkTailStateText = Object.freeze({
   }),
 });
 
+const realmStateText = Object.freeze({
+  "ink-cave-spider-seven": Object.freeze({
+    idle: Object.freeze({
+      alt: "墨蛛小七展開四條絨蛛臂，捧著字網竹框安靜等候。",
+      fallback: "墨蛛小七正在盤絲墨洞等你，國語文任務仍可直接開始。",
+    }),
+    focus: Object.freeze({
+      alt: "墨蛛小七用上方雙臂指向竹框，專注整理字網。",
+      fallback: "墨蛛小七正陪你整理字網，任務內容仍可正常閱讀。",
+    }),
+    celebrate: Object.freeze({
+      alt: "墨蛛小七小幅舉起絨蛛臂，慶祝文字網亮起一段。",
+      fallback: "墨蛛小七正陪你回看亮起的字網，學習足跡仍可查看。",
+    }),
+    recover: Object.freeze({
+      alt: "墨蛛小七坐低身子，用四條絨蛛臂安心抱著竹框。",
+      fallback: "墨蛛小七陪你在墨洞歇腳，已整理的字網不會消失。",
+    }),
+  }),
+  "wind-valley-green-horn": Object.freeze({
+    idle: Object.freeze({
+      alt: "青角小牛妖捧著風語葉笛，在谷口安靜等候。",
+      fallback: "青角小牛妖正在風語谷等你，英文任務仍可直接開始。",
+    }),
+    focus: Object.freeze({
+      alt: "青角小牛妖把葉笛靠近牛鼻，專注聽風中的聲音。",
+      fallback: "青角小牛妖正陪你聽風辨字，任務內容仍可正常閱讀。",
+    }),
+    celebrate: Object.freeze({
+      alt: "青角小牛妖微抬一隻前蹄，開心迎接回來的風語葉。",
+      fallback: "青角小牛妖正陪你回看今天記住的單字。",
+    }),
+    recover: Object.freeze({
+      alt: "青角小牛妖坐低身子，抱著風語葉笛安心歇腳。",
+      fallback: "青角小牛妖陪你在風語谷歇腳，已走過的路不會消失。",
+    }),
+  }),
+  "golden-ridge-tablet-turtle": Object.freeze({
+    idle: Object.freeze({
+      alt: "負碑小龜妖背著三環石碑，在算陣嶺安靜等候。",
+      fallback: "負碑小龜妖正在算陣嶺等你，數學任務仍可直接開始。",
+    }),
+    focus: Object.freeze({
+      alt: "負碑小龜妖抬起頭與前足，專注指出山路規律。",
+      fallback: "負碑小龜妖正陪你找規律，任務內容仍可正常閱讀。",
+    }),
+    celebrate: Object.freeze({
+      alt: "負碑小龜妖抬高頭與前足，慶祝金環轉正一格。",
+      fallback: "負碑小龜妖正陪你回看找到的那一步規律。",
+    }),
+    recover: Object.freeze({
+      alt: "負碑小龜妖放低頭、收攏短足，在石碑下安心歇腳。",
+      fallback: "負碑小龜妖陪你在算陣嶺歇腳，已走過的路不會消失。",
+    }),
+  }),
+});
+
 export const CHARACTER_CATALOG = Object.freeze([
   {
     id: "ink-tail-guide",
@@ -136,6 +193,7 @@ export const CHARACTER_CATALOG = Object.freeze([
       "ink-cave-spider-seven",
       "墨蛛小七正在盤絲墨洞等你，文字任務仍可直接開始。",
     ),
+    stateText: realmStateText["ink-cave-spider-seven"],
   },
   {
     id: "wind-valley-green-horn",
@@ -147,6 +205,7 @@ export const CHARACTER_CATALOG = Object.freeze([
       "wind-valley-green-horn",
       "青角小牛妖正在芭蕉風語谷等你，英文任務仍可直接開始。",
     ),
+    stateText: realmStateText["wind-valley-green-horn"],
   },
   {
     id: "golden-ridge-tablet-turtle",
@@ -158,5 +217,6 @@ export const CHARACTER_CATALOG = Object.freeze([
       "golden-ridge-tablet-turtle",
       "負碑小龜妖正在金箍算陣嶺等你，數學任務仍可直接開始。",
     ),
+    stateText: realmStateText["golden-ridge-tablet-turtle"],
   },
 ]);
