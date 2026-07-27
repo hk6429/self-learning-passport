@@ -1,5 +1,9 @@
 # 自學複利護照 A＋B MVP 實作計畫
 
+> **已被取代。** 本計畫只適用於第一版設計。2026-07-27 起改以
+> `2026-07-27-self-learning-passport-yaoguai-implementation.md`
+> 與 `2026-07-27-self-learning-passport-yaoguai-assets.md` 為準。
+
 - 日期：2026-07-27
 - 專案：`self-learning-passport`
 - 規格來源：`docs/superpowers/specs/2026-07-27-self-learning-passport-design.md`
