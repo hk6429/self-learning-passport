@@ -4,6 +4,6 @@ pages_build_output_dir = "."
 
 [[d1_databases]]
 binding = "PASSPORT_DB"
-database_name = "self-learning-passport-local"
-database_id = "local"
+database_name = "self-learning-passport"
+database_id = "88592580-d753-4b74-a765-224ce288672e"
 migrations_dir = "migrations"

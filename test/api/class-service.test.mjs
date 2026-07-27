@@ -111,7 +111,7 @@ test("D1 adapter 以 prepared statements 寫入班級與任務交易批次", asy
   assert.equal(JSON.stringify(prepared).includes("teacher-secret"), false);
 });
 
-test("D1 schema 僅建立匿名班級四表與索引，本機使用 PASSPORT_DB", async () => {
+test("D1 schema 僅建立匿名班級四表與索引，正式環境使用 PASSPORT_DB", async () => {
   const [sql, wrangler] = await Promise.all([
     readFile(
       new URL("../../migrations/0001_initial.sql", import.meta.url),
@@ -133,8 +133,8 @@ test("D1 schema 僅建立匿名班級四表與索引，本機使用 PASSPORT_DB"
   );
 
   assert.match(wrangler, /binding\s*=\s*"PASSPORT_DB"/u);
-  assert.match(wrangler, /database_id\s*=\s*"local"/u);
-  assert.doesNotMatch(
+  assert.match(wrangler, /database_name\s*=\s*"self-learning-passport"/u);
+  assert.match(
     wrangler,
     /database_id\s*=\s*"[0-9a-f]{8}-[0-9a-f-]{27,}"/iu,
   );
