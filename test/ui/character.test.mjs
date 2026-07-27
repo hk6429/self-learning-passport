@@ -17,6 +17,7 @@ test("依 CHARACTER_CATALOG 解析四種角色狀態資產與可讀 alt", () => 
 
   for (const character of CHARACTER_CATALOG) {
     for (const state of CHARACTER_STATES) {
+      const stateText = character.stateText?.[state];
       assert.deepEqual(
         resolveCharacterDisplay({
           characterId: character.id,
@@ -29,8 +30,8 @@ test("依 CHARACTER_CATALOG 解析四種角色狀態資產與可讀 alt", () => 
           role: character.role,
           state,
           src: character.assets[state],
-          alt: character.alt,
-          fallbackText: character.assets.fallback,
+          alt: stateText?.alt ?? character.alt,
+          fallbackText: stateText?.fallback ?? character.assets.fallback,
           reason: null,
         },
       );
@@ -71,9 +72,62 @@ test("未知角色、未知狀態與圖片失敗都提供文字 fallback 與 alt
     state: "focus",
     imageFailed: true,
   });
+  const focusText = character.stateText?.focus;
   assert.equal(imageFailure.mode, "text");
   assert.equal(imageFailure.src, null);
-  assert.equal(imageFailure.alt, character.alt);
-  assert.equal(imageFailure.fallbackText, character.assets.fallback);
+  assert.equal(imageFailure.alt, focusText?.alt ?? character.alt);
+  assert.equal(
+    imageFailure.fallbackText,
+    focusText?.fallback ?? character.assets.fallback,
+  );
   assert.equal(imageFailure.reason, "image-failed");
+});
+
+test("狀態文字優先於角色層級文字，舊目錄格式仍可解析", () => {
+  const modernCharacter = {
+    id: "state-aware-guide",
+    name: "狀態小妖",
+    role: "契約測試",
+    alt: "狀態小妖陪在路旁。",
+    assets: {
+      idle: "/idle.webp",
+      fallback: "狀態小妖仍會用文字陪你。",
+    },
+    stateText: {
+      idle: {
+        alt: "狀態小妖豎起耳朵，在路旁等待出發。",
+        fallback: "狀態小妖已在路旁等你，仍可直接出發。",
+      },
+    },
+  };
+  const legacyCharacter = {
+    id: "legacy-guide",
+    name: "舊契約小妖",
+    role: "相容測試",
+    alt: "舊契約小妖陪在路旁。",
+    assets: {
+      idle: "/legacy-idle.webp",
+      fallback: "舊契約小妖仍會用文字陪你。",
+    },
+  };
+  const catalog = [modernCharacter, legacyCharacter];
+
+  const modernDisplay = resolveCharacterDisplay({
+    characterId: modernCharacter.id,
+    state: "idle",
+    catalog,
+  });
+  assert.equal(modernDisplay.alt, modernCharacter.stateText.idle.alt);
+  assert.equal(
+    modernDisplay.fallbackText,
+    modernCharacter.stateText.idle.fallback,
+  );
+
+  const legacyDisplay = resolveCharacterDisplay({
+    characterId: legacyCharacter.id,
+    state: "idle",
+    catalog,
+  });
+  assert.equal(legacyDisplay.alt, legacyCharacter.alt);
+  assert.equal(legacyDisplay.fallbackText, legacyCharacter.assets.fallback);
 });

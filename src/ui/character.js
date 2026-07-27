@@ -30,13 +30,14 @@ export function resolveCharacterDisplay({
     return { ...UNKNOWN_CHARACTER_DISPLAY };
   }
 
+  const stateText = character.stateText?.[state];
   const common = {
     id: character.id,
     name: character.name,
     role: character.role,
     state,
-    alt: character.alt,
-    fallbackText: character.assets.fallback,
+    alt: stateText?.alt || character.alt,
+    fallbackText: stateText?.fallback || character.assets.fallback,
   };
 
   if (!CHARACTER_STATES.includes(state) || !character.assets[state]) {

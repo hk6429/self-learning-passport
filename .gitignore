@@ -8,3 +8,6 @@ blob-report/
 tmp/
 output/
 .DS_Store
+assets/references/candidates/
+assets/characters/*/source-*/
+assets/characters/*/*-r[0-9].webp

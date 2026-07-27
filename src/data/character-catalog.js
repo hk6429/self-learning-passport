@@ -9,6 +9,25 @@ const characterAssets = (id, fallback) =>
     fallback,
   });
 
+const inkTailStateText = Object.freeze({
+  idle: Object.freeze({
+    alt: "墨尾行者豎起圓耳，握著路牌站在霧海岔路前。",
+    fallback: "墨尾行者正在霧海岔路等你，仍可直接選擇今日航線。",
+  }),
+  focus: Object.freeze({
+    alt: "墨尾行者指著木路籤，專注查看眼前的方向。",
+    fallback: "墨尾行者正陪你查看修行帖，任務內容仍可正常閱讀。",
+  }),
+  celebrate: Object.freeze({
+    alt: "墨尾行者握著木路籤，微抬腳舉拳慶祝一小步。",
+    fallback: "墨尾行者正陪你回看今天的一小步，學習足跡仍可查看。",
+  }),
+  recover: Object.freeze({
+    alt: "墨尾行者坐低身子，讓雙墨尾環繞腳邊安心歇腳。",
+    fallback: "墨尾行者陪你在驛站歇腳，已走過的路不會消失。",
+  }),
+});
+
 export const CHARACTER_CATALOG = Object.freeze([
   {
     id: "ink-tail-guide",
@@ -19,6 +38,7 @@ export const CHARACTER_CATALOG = Object.freeze([
       "ink-tail-guide",
       "墨尾行者正在前方，陪你選一條今日航線。",
     ),
+    stateText: inkTailStateText,
   },
   {
     id: "moon-rabbit-healer",

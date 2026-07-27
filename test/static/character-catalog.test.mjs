@@ -50,3 +50,38 @@ test("每位角色都有可及文字、四種狀態與圖片缺失替代內容",
     );
   }
 });
+
+test("墨尾行者四種狀態提供精準 alt 與 fallback，其餘角色可沿用舊契約", () => {
+  const inkTailGuide = CHARACTER_CATALOG.find(
+    ({ id }) => id === "ink-tail-guide",
+  );
+  const states = ["idle", "focus", "celebrate", "recover"];
+
+  assert.deepEqual(Object.keys(inkTailGuide.stateText).sort(), states.sort());
+
+  for (const state of states) {
+    assert.ok(inkTailGuide.stateText[state].alt, `${state} 缺少精準 alt`);
+    assert.ok(
+      inkTailGuide.stateText[state].fallback,
+      `${state} 缺少精準 fallback`,
+    );
+  }
+
+  assert.equal(
+    new Set(states.map((state) => inkTailGuide.stateText[state].alt)).size,
+    states.length,
+    "四種狀態不應共用同一段 alt",
+  );
+  assert.equal(
+    new Set(states.map((state) => inkTailGuide.stateText[state].fallback)).size,
+    states.length,
+    "四種狀態不應共用同一段 fallback",
+  );
+
+  const legacyCharacter = CHARACTER_CATALOG.find(
+    ({ id }) => id === "moon-rabbit-healer",
+  );
+  assert.equal(legacyCharacter.stateText, undefined);
+  assert.ok(legacyCharacter.alt);
+  assert.ok(legacyCharacter.assets.fallback);
+});

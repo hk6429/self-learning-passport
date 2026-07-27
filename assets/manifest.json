@@ -1,0 +1,92 @@
+{
+  "schemaVersion": 1,
+  "assets": [
+    {
+      "id": "style-anchor-beast-v3",
+      "kind": "reference",
+      "path": "assets/references/style-anchor.webp",
+      "ratio": "1:1",
+      "role": "墨尾行者與霧海妖界的正式風格錨點",
+      "alt": "圓耳雙尾的墨尾行者握著木路籤，站在靛紫霧海入口。",
+      "promptVersion": 3,
+      "referenceIds": [],
+      "approved": true
+    },
+    {
+      "id": "character-ink-tail-guide-idle-v2",
+      "kind": "character",
+      "characterId": "ink-tail-guide",
+      "state": "idle",
+      "version": 2,
+      "path": "assets/characters/ink-tail-guide/idle.webp",
+      "sources": [
+        {"width": 256, "path": "assets/characters/ink-tail-guide/idle-256.webp"},
+        {"width": 512, "path": "assets/characters/ink-tail-guide/idle-512.webp"},
+        {"width": 1024, "path": "assets/characters/ink-tail-guide/idle.webp"}
+      ],
+      "ratio": "1:1",
+      "role": "首頁引路與今日任務",
+      "alt": "墨尾行者豎起圓耳，握著木路籤安靜等候。",
+      "promptVersion": 2,
+      "referenceIds": ["style-anchor-beast-v3"],
+      "approved": true
+    },
+    {
+      "id": "character-ink-tail-guide-focus-v2",
+      "kind": "character",
+      "characterId": "ink-tail-guide",
+      "state": "focus",
+      "version": 2,
+      "path": "assets/characters/ink-tail-guide/focus.webp",
+      "sources": [
+        {"width": 256, "path": "assets/characters/ink-tail-guide/focus-256.webp"},
+        {"width": 512, "path": "assets/characters/ink-tail-guide/focus-512.webp"},
+        {"width": 1024, "path": "assets/characters/ink-tail-guide/focus.webp"}
+      ],
+      "ratio": "1:1",
+      "role": "專注查看今日方向",
+      "alt": "墨尾行者指著木路籤，專注查看眼前的方向。",
+      "promptVersion": 2,
+      "referenceIds": ["style-anchor-beast-v3"],
+      "approved": true
+    },
+    {
+      "id": "character-ink-tail-guide-celebrate-v2",
+      "kind": "character",
+      "characterId": "ink-tail-guide",
+      "state": "celebrate",
+      "version": 2,
+      "path": "assets/characters/ink-tail-guide/celebrate.webp",
+      "sources": [
+        {"width": 256, "path": "assets/characters/ink-tail-guide/celebrate-256.webp"},
+        {"width": 512, "path": "assets/characters/ink-tail-guide/celebrate-512.webp"},
+        {"width": 1024, "path": "assets/characters/ink-tail-guide/celebrate.webp"}
+      ],
+      "ratio": "1:1",
+      "role": "慶祝完成一小步",
+      "alt": "墨尾行者握著木路籤，微抬腳舉拳慶祝一小步。",
+      "promptVersion": 2,
+      "referenceIds": ["style-anchor-beast-v3"],
+      "approved": true
+    },
+    {
+      "id": "character-ink-tail-guide-recover-v2",
+      "kind": "character",
+      "characterId": "ink-tail-guide",
+      "state": "recover",
+      "version": 2,
+      "path": "assets/characters/ink-tail-guide/recover.webp",
+      "sources": [
+        {"width": 256, "path": "assets/characters/ink-tail-guide/recover-256.webp"},
+        {"width": 512, "path": "assets/characters/ink-tail-guide/recover-512.webp"},
+        {"width": 1024, "path": "assets/characters/ink-tail-guide/recover.webp"}
+      ],
+      "ratio": "1:1",
+      "role": "中斷後安心回航",
+      "alt": "墨尾行者坐低身子，讓雙墨尾環繞腳邊安心歇腳。",
+      "promptVersion": 3,
+      "referenceIds": ["style-anchor-beast-v3"],
+      "approved": true
+    }
+  ]
+}
