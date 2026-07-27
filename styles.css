@@ -221,9 +221,9 @@ img {
 
 .map-stage {
   display: grid;
-  grid-template-columns: minmax(0, 1fr) minmax(190px, 0.72fr);
+  grid-template-columns: minmax(0, 1.26fr) minmax(170px, 0.54fr);
   align-items: center;
-  gap: 18px;
+  gap: clamp(18px, 3vw, 34px);
   padding: clamp(28px, 5vw, 64px);
   border: 1px solid rgba(255, 248, 232, 0.12);
   background:
@@ -280,18 +280,45 @@ img {
 .guide-figure {
   position: relative;
   z-index: 1;
-  align-self: end;
+  align-self: center;
   justify-self: end;
   width: 100%;
-  max-width: 300px;
+  max-width: 256px;
+  aspect-ratio: 1;
   margin: 0;
+  overflow: hidden;
+  isolation: isolate;
+  border: 1px solid rgba(255, 248, 232, 0.26);
+  border-radius: 46% 54% 50% 50% / 42% 46% 54% 58%;
+  background:
+    radial-gradient(circle at 52% 44%, rgba(255, 248, 232, 0.94), rgba(216, 210, 225, 0.7) 58%, rgba(72, 61, 112, 0.34)),
+    rgba(255, 248, 232, 0.12);
+  box-shadow:
+    0 24px 34px rgba(4, 4, 18, 0.34),
+    0 0 0 10px rgba(255, 248, 232, 0.035);
+  animation: guide-float 7s ease-in-out infinite;
+}
+
+.guide-figure::after {
+  position: absolute;
+  z-index: 2;
+  inset: 8px;
+  border: 1px solid rgba(243, 183, 67, 0.28);
+  border-radius: inherit;
+  content: "";
+  pointer-events: none;
 }
 
 .guide-figure img {
+  position: relative;
+  z-index: 1;
   width: 100%;
+  height: auto;
+  aspect-ratio: 1;
   margin-inline: auto;
+  object-fit: cover;
+  border-radius: inherit;
   filter: drop-shadow(0 28px 26px rgba(4, 4, 18, 0.42));
-  animation: guide-float 7s ease-in-out infinite;
 }
 
 .guide-fallback {
@@ -1193,7 +1220,8 @@ img {
   }
 
   .guide-figure {
-    width: min(58vw, 220px);
+    justify-self: center;
+    width: min(54vw, 210px);
     margin: 0;
   }
 

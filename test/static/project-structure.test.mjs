@@ -21,7 +21,10 @@ test("專案提供樣式與可安全啟動的應用程式", async () => {
     readProjectFile("src/app.js"),
   ]);
 
-  assert.match(html, /<link[^>]+rel="stylesheet"[^>]+href="\.\/styles\.css"/);
+  assert.match(
+    html,
+    /<link[^>]+rel="stylesheet"[^>]+href="\.\/styles\.css(?:\?[^"]+)?"/,
+  );
   assert.match(styles, /box-sizing:\s*border-box/);
   assert.match(app, /document\.querySelector\("#app"\)/);
 });

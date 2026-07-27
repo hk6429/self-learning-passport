@@ -88,10 +88,17 @@ test("老師與家長可製作同行鼓勵卡，學生端能看見鼓勵", async
   assert.match(styles, /\.encouragement-card/);
 });
 
-test("主視覺角色圖不使用會侵入標題欄的負邊界", async () => {
+test("主視覺角色保持正方形比例並融入霧海舞台，不侵入標題欄", async () => {
   const styles = await readProjectFile("styles.css");
   const guideRule = styles.match(/\.guide-figure\s*\{([^}]*)\}/)?.[1] ?? "";
+  const guideImageRule =
+    styles.match(/\.guide-figure img\s*\{([^}]*)\}/)?.[1] ?? "";
 
   assert.doesNotMatch(guideRule, /margin\s*:[^;]*-/);
   assert.match(guideRule, /margin\s*:\s*0/);
+  assert.match(guideRule, /aspect-ratio\s*:\s*1/);
+  assert.match(guideRule, /overflow\s*:\s*hidden/);
+  assert.match(guideImageRule, /height\s*:\s*auto/);
+  assert.match(guideImageRule, /aspect-ratio\s*:\s*1/);
+  assert.match(guideImageRule, /object-fit\s*:\s*cover/);
 });
