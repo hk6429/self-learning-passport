@@ -47,7 +47,7 @@ test("首頁狀態提供三身份入口、墨尾引導與學生偏好", () => {
   });
 });
 
-test("首頁狀態提供三座妖域、各自 idle 角色與三種時長航線", () => {
+test("首頁狀態提供七座妖域，前三域保留 idle 角色與三種時長航線", () => {
   const home = buildHomeState({
     state: createDefaultState(),
     now: "2026-07-27T08:00:00.000Z",
@@ -59,6 +59,10 @@ test("首頁狀態提供三座妖域、各自 idle 角色與三種時長航線",
       "ink-spider-cave",
       "plantain-word-valley",
       "golden-ring-math-ridge",
+      "literati-ink-scroll",
+      "classical-relief-pavilion",
+      "science-hero-peak",
+      "seven-art-heart-realm",
     ],
   );
 
@@ -68,7 +72,9 @@ test("首頁狀態提供三座妖域、各自 idle 角色與三種時長航線",
     ["golden-ring-math-ridge", "golden-ridge-tablet-turtle"],
   ]);
 
-  for (const realm of home.realms) {
+  const characterRealms = home.realms.filter(({ primaryNpcId }) => primaryNpcId);
+  assert.equal(characterRealms.length, 3);
+  for (const realm of characterRealms) {
     assert.equal(realm.character.id, expectedCharacters.get(realm.id));
     assert.equal(realm.character.displayState, "idle");
     assert.match(realm.character.assetUrl, /\/idle\.webp$/);
@@ -84,7 +90,7 @@ test("首頁狀態提供三座妖域、各自 idle 角色與三種時長航線",
     );
   }
 
-  assert.deepEqual(home.realms[0].character, {
+  assert.deepEqual(characterRealms[0].character, {
     id: "ink-cave-spider-seven",
     name: "墨蛛小七",
     role: "盤絲墨洞主要 NPC",
@@ -93,6 +99,33 @@ test("首頁狀態提供三座妖域、各自 idle 角色與三種時長航線",
     alt: "墨蛛小七展開四條絨蛛臂，捧著字網竹框安靜等候。",
     fallback: "墨蛛小七正在盤絲墨洞等你，國語文任務仍可直接開始。",
   });
+});
+
+test("四個新增主域保留專屬配圖與三種時長航線", () => {
+  const home = buildHomeState({
+    state: createDefaultState(),
+    now: "2026-07-27T08:00:00.000Z",
+  });
+  const addedSiteIds = new Set([
+    "wenhao-xiaozhuan",
+    "wenyan-jieyou-zhan",
+    "science-hero",
+    "fanren-lianxin",
+  ]);
+  const addedRealms = home.realms.filter(({ siteId }) =>
+    addedSiteIds.has(siteId),
+  );
+
+  assert.equal(addedRealms.length, 4);
+  for (const realm of addedRealms) {
+    assert.ok(realm.art.src);
+    assert.ok(realm.art.alt);
+    assert.equal(realm.character, null);
+    assert.deepEqual(
+      realm.routes.map(({ durationMinutes }) => durationMinutes),
+      [5, 10, 15],
+    );
+  }
 });
 
 test("隔一個完整活躍日後提供偏好領域的五分鐘安心回航", () => {

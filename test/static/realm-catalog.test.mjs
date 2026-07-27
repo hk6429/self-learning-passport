@@ -4,8 +4,41 @@ import test from "node:test";
 import { CHARACTER_CATALOG } from "../../src/data/character-catalog.js";
 import { REALM_CATALOG } from "../../src/data/realm-catalog.js";
 
-test("三域 siteId、subject 與主要 NPC 對應固定且唯一", () => {
-  assert.deepEqual(REALM_CATALOG, [
+test("七個主域包含四個新增作品，且每域都有角色或專屬配圖", () => {
+  assert.deepEqual(
+    REALM_CATALOG.map(({ siteId }) => siteId),
+    [
+      "zizizhuji",
+      "vocab-duel",
+      "bxws-math",
+      "wenhao-xiaozhuan",
+      "wenyan-jieyou-zhan",
+      "science-hero",
+      "fanren-lianxin",
+    ],
+  );
+
+  for (const realm of REALM_CATALOG) {
+    assert.ok(
+      realm.primaryNpcId || realm.art,
+      `${realm.name} 必須有主要角色或專屬配圖`,
+    );
+  }
+
+  const illustratedRealms = REALM_CATALOG.filter(({ art }) => art);
+  assert.equal(illustratedRealms.length, 4);
+  for (const realm of illustratedRealms) {
+    assert.match(realm.art.src, /^\/assets\/realms\/.+\.webp$/);
+    assert.ok(realm.art.alt);
+    assert.ok(realm.art.fallback);
+  }
+});
+
+test("三個角色主域的 siteId、subject 與主要 NPC 對應固定且唯一", () => {
+  const characterRealms = REALM_CATALOG.filter(
+    ({ primaryNpcId }) => primaryNpcId,
+  );
+  assert.deepEqual(characterRealms, [
     {
       id: "ink-spider-cave",
       name: "盤絲墨洞",
@@ -30,18 +63,18 @@ test("三域 siteId、subject 與主要 NPC 對應固定且唯一", () => {
   ]);
 
   for (const field of ["id", "siteId", "primaryNpcId"]) {
-    const values = REALM_CATALOG.map((realm) => realm[field]);
+    const values = characterRealms.map((realm) => realm[field]);
     assert.equal(new Set(values).size, 3, `${field} 不可重複`);
   }
 });
 
-test("每域主要 NPC 都指向 realm-primary，不得 alias 功能支援角色", () => {
+test("有主要 NPC 的妖域都指向 realm-primary，不得 alias 功能支援角色", () => {
   const forbiddenAliases = new Set([
     "star-web-weaver",
     "fire-cloud-starter",
   ]);
 
-  for (const realm of REALM_CATALOG) {
+  for (const realm of REALM_CATALOG.filter(({ primaryNpcId }) => primaryNpcId)) {
     assert.equal(forbiddenAliases.has(realm.primaryNpcId), false);
     const character = CHARACTER_CATALOG.find(
       ({ id }) => id === realm.primaryNpcId,

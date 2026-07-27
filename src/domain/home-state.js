@@ -46,7 +46,9 @@ export function buildHomeState({ state, now = new Date().toISOString() }) {
     guide: characterDisplay(findCharacter("ink-tail-guide"), guideState),
     realms: REALM_CATALOG.map((realm) => ({
       ...realm,
-      character: characterDisplay(findCharacter(realm.primaryNpcId), "idle"),
+      character: realm.primaryNpcId
+        ? characterDisplay(findCharacter(realm.primaryNpcId), "idle")
+        : null,
       routes: MISSION_CATALOG.filter(
         ({ siteId }) => siteId === realm.siteId,
       )

@@ -654,6 +654,15 @@ img {
   transition: transform 220ms ease;
 }
 
+.realm-card__art-image {
+  width: 100%;
+  aspect-ratio: 16 / 10;
+  border: 1px solid rgba(255, 248, 232, 0.12);
+  border-radius: 18px;
+  object-fit: cover;
+  object-position: top center;
+}
+
 .realm-card:hover .realm-character img,
 .realm-card:hover .realm-card__npc-image {
   transform: translateY(-4px) scale(1.02);
@@ -957,6 +966,10 @@ img {
   .realm-character img,
   .realm-card__npc-image {
     width: 210px;
+  }
+
+  .realm-card__art-image {
+    width: 100%;
   }
 
   .progress-dock {

@@ -22,7 +22,7 @@ export const SOURCE_PLATFORM_CATALOG = Object.freeze(
       duration: "建議 10–20 分鐘",
       url: "https://wenhao-xiaozhuan.pages.dev/",
       audiences: ALL_LEARNERS,
-      coreRealm: false,
+      coreRealm: true,
       examPlatform: false,
     },
     {
@@ -54,7 +54,7 @@ export const SOURCE_PLATFORM_CATALOG = Object.freeze(
       duration: "建議 15–20 分鐘",
       url: "https://wenyan-jieyou-zhan.pages.dev/",
       audiences: ALL_LEARNERS,
-      coreRealm: false,
+      coreRealm: true,
       examPlatform: false,
     },
     {
@@ -102,7 +102,7 @@ export const SOURCE_PLATFORM_CATALOG = Object.freeze(
       duration: "可分段使用",
       url: "https://fanren-lianxin.pages.dev/",
       audiences: ALL_LEARNERS,
-      coreRealm: false,
+      coreRealm: true,
       examPlatform: false,
     },
     {
@@ -214,7 +214,7 @@ export const SOURCE_PLATFORM_CATALOG = Object.freeze(
       duration: "建議 10–20 分鐘",
       url: "https://science-hero.pages.dev/",
       audiences: ALL_LEARNERS,
-      coreRealm: false,
+      coreRealm: true,
       examPlatform: false,
     },
   ].map(freezePlatform),

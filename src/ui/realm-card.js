@@ -5,6 +5,10 @@ const SUBJECT_LABELS = Object.freeze({
   language: "國語文",
   english: "英文",
   math: "數學",
+  literature: "文學",
+  classical: "文言文",
+  science: "自然科",
+  leadership: "自我領導力",
 });
 
 const REQUIRED_DURATIONS = Object.freeze([5, 10, 15]);
@@ -29,10 +33,34 @@ function orderedMissions(missions) {
   return ordered;
 }
 
-function createNpcFigure(documentAdapter, primaryNpcId) {
+function createRealmFigure(documentAdapter, realmViewModel) {
   const figure = documentAdapter.createElement("figure");
   figure.className = "realm-card__npc";
 
+  if (realmViewModel.art) {
+    const fallback = createTextElement(
+      documentAdapter,
+      "p",
+      realmViewModel.art.fallback,
+      { className: "realm-card__npc-fallback" },
+    );
+    fallback.setAttribute("role", "img");
+    fallback.setAttribute("aria-label", realmViewModel.art.alt);
+    fallback.hidden = true;
+
+    const image = documentAdapter.createElement("img");
+    image.className = "realm-card__npc-image realm-card__art-image";
+    image.src = realmViewModel.art.src;
+    image.alt = realmViewModel.art.alt;
+    image.addEventListener("error", () => {
+      image.hidden = true;
+      fallback.hidden = false;
+    });
+    figure.append(image, fallback);
+    return figure;
+  }
+
+  const primaryNpcId = realmViewModel.primaryNpcId;
   const display = resolveCharacterDisplay({
     characterId: primaryNpcId,
     state: "idle",
@@ -125,7 +153,7 @@ export function createRealmCard(
   }
 
   card.append(
-    createNpcFigure(documentAdapter, realmViewModel.primaryNpcId),
+    createRealmFigure(documentAdapter, realmViewModel),
     heading,
     subject,
     routes,

@@ -185,6 +185,27 @@ test("NPC 圖片失敗與未知角色都轉為可讀文字 fallback", () => {
   );
 });
 
+test("新增主域以專屬配圖呈現，載入失敗時保留可讀替代內容", () => {
+  const fake = createFakeDocument();
+  const model = realmViewModel("fanren-lianxin");
+  const card = createRealmCard(fake.documentAdapter, model);
+  const image = findAll(card, ({ tagName }) => tagName === "img")[0];
+  const fallback = findAll(
+    card,
+    ({ className }) => className === "realm-card__npc-fallback",
+  )[0];
+
+  assert.equal(image.src, model.art.src);
+  assert.equal(image.alt, model.art.alt);
+  assert.equal(fallback.hidden, true);
+
+  image.dispatch("error");
+  assert.equal(image.hidden, true);
+  assert.equal(fallback.hidden, false);
+  assert.equal(fallback.textContent, model.art.fallback);
+  assert.equal(fallback.attributes.get("aria-label"), model.art.alt);
+});
+
 test("航線必須恰好包含 5、10、15 分鐘", () => {
   const fake = createFakeDocument();
   const model = realmViewModel("vocab-duel");

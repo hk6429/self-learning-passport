@@ -16,18 +16,18 @@ test("學生與家長各看見 10 個自學平台，老師看見 12 個非會考
   }
 });
 
-test("主妖域已顯示時，支線清單不重複三個核心平台", () => {
+test("七個主妖域已顯示時，支線清單不重複核心平台", () => {
   assert.equal(
     getPlatformsForRole("student", { includeCore: false }).length,
-    7,
+    3,
   );
   assert.equal(
     getPlatformsForRole("parent", { includeCore: false }).length,
-    7,
+    3,
   );
   assert.equal(
     getPlatformsForRole("teacher", { includeCore: false }).length,
-    9,
+    5,
   );
 });
 

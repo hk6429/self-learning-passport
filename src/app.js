@@ -20,6 +20,10 @@ const SUBJECT_SITE_IDS = Object.freeze({
   language: "zizizhuji",
   english: "vocab-duel",
   math: "bxws-math",
+  literature: "wenhao-xiaozhuan",
+  classical: "wenyan-jieyou-zhan",
+  science: "science-hero",
+  leadership: "fanren-lianxin",
 });
 
 const PLATFORM_GROUP_LABELS = Object.freeze({
@@ -274,7 +278,7 @@ function createRoleNotice(activeRole) {
       eyebrow: "引路仙師",
       title: "替全班安排一條走得完的路",
       description:
-        "從三座妖域的固定目錄挑選 1～14 個任務；班級只共享匿名共同節奏，不顯示排名、反思或落後名單。",
+        "從七座主域的固定目錄挑選 1～14 個任務；班級只共享匿名共同節奏，不顯示排名、反思或落後名單。",
     },
     parent: {
       eyebrow: "守燈人",
@@ -351,13 +355,13 @@ function createPlatformSection(activeRole, { includeCore = false } = {}) {
       eyebrow: "支線妖境",
       title: "還有更多世界，等你照興趣探路",
       description:
-        "三座主域之外，閱讀、文言、自然與自我領導力也都能成為今天的一小步。",
+        "七座主域之外，閱讀解謎與習慣養成也能成為今天的一小步。",
     },
     teacher: {
       eyebrow: "完整站群",
       title: "把十二個非會考平台帶進教學現場",
       description:
-        "上方三座主域適合每日任務；下方支線涵蓋閱讀、文學、七個習慣與教師專業成長。",
+        "上方七座主域適合每日任務；下方支線補上閱讀解謎、習慣經營與教師專業成長。",
     },
     parent: {
       eyebrow: "親子選路",
@@ -404,7 +408,7 @@ function createRealmSection(home, activeRole) {
   const heading = node("header", { className: "section-heading" });
   const titleWrap = node("div");
   titleWrap.append(
-    node("p", { className: "eyebrow", text: "三域同行" }),
+    node("p", { className: "eyebrow", text: "七域同行" }),
     node("h2", {
       text: activeRole === "teacher" ? "安排班級今日航線" : "選一座今天想走的妖域",
       attributes: { id: "realm-heading" },

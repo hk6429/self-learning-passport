@@ -369,6 +369,50 @@
       "promptVersion": 1,
       "referenceIds": ["style-anchor-beast-v3"],
       "approved": true
+    },
+    {
+      "id": "realm-art-wenhao-xiaozhuan-v2",
+      "kind": "realm-art",
+      "path": "assets/realms/wenhao-xiaozhuan-v2.webp",
+      "ratio": "16:10",
+      "role": "文豪笑傳主域入口",
+      "alt": "三位 Q 版文豪妖靈圍著發光墨卷，在霧海書山探索文學故事。",
+      "promptVersion": 2,
+      "referenceIds": ["style-anchor-beast-v3"],
+      "approved": true
+    },
+    {
+      "id": "realm-art-wenyan-jieyou-zhan-v2",
+      "kind": "realm-art",
+      "path": "assets/realms/wenyan-jieyou-zhan-v2.webp",
+      "ratio": "16:10",
+      "role": "文言解憂站主域入口",
+      "alt": "Q 版卷軸妖靈展開發光古卷，陪小行者在霧海山亭解開心事。",
+      "promptVersion": 2,
+      "referenceIds": ["style-anchor-beast-v3"],
+      "approved": true
+    },
+    {
+      "id": "realm-art-science-hero-v2",
+      "kind": "realm-art",
+      "path": "assets/realms/science-hero-v2.webp",
+      "ratio": "16:10",
+      "role": "科學英雄主域入口",
+      "alt": "Q 版角獸鍊金師與小龜助手觀察玻璃瓶中的發光植物。",
+      "promptVersion": 2,
+      "referenceIds": ["style-anchor-beast-v3"],
+      "approved": true
+    },
+    {
+      "id": "realm-art-fanren-lianxin-v2",
+      "kind": "realm-art",
+      "path": "assets/realms/fanren-lianxin-v2.webp",
+      "ratio": "16:10",
+      "role": "凡人煉心訣主域入口",
+      "alt": "四位 Q 版妖界小行者帶著羅盤、心願卷與燈籠結伴走上金色山路。",
+      "promptVersion": 2,
+      "referenceIds": ["style-anchor-beast-v3"],
+      "approved": true
     }
   ]
 }

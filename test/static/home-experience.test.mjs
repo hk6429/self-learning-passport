@@ -5,7 +5,7 @@ import test from "node:test";
 const readProjectFile = (path) =>
   readFile(new URL(`../../${path}`, import.meta.url), "utf8");
 
-test("首頁整合三身份、三妖域、今日修行帖與安心回航入口", async () => {
+test("首頁整合三身份、七妖域、今日修行帖與安心回航入口", async () => {
   const [app, styles, roles] = await Promise.all([
     readProjectFile("src/app.js"),
     readProjectFile("styles.css"),

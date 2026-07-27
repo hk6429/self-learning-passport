@@ -7,11 +7,41 @@ import {
   isApprovedMissionUrl,
 } from "../../src/data/mission-catalog.js";
 
-test("任務網址只使用三個核准來源", () => {
+test("七個主域各有 5、10、15 分鐘航線", () => {
+  const expectedSiteIds = [
+    "zizizhuji",
+    "vocab-duel",
+    "bxws-math",
+    "wenhao-xiaozhuan",
+    "wenyan-jieyou-zhan",
+    "science-hero",
+    "fanren-lianxin",
+  ];
+
+  assert.deepEqual(
+    [...new Set(MISSION_CATALOG.map(({ siteId }) => siteId))],
+    expectedSiteIds,
+  );
+
+  for (const siteId of expectedSiteIds) {
+    assert.deepEqual(
+      MISSION_CATALOG.filter((mission) => mission.siteId === siteId)
+        .map(({ durationMinutes }) => durationMinutes)
+        .sort((left, right) => left - right),
+      [5, 10, 15],
+    );
+  }
+});
+
+test("任務網址只使用七個核准來源", () => {
   assert.deepEqual(APPROVED_MISSION_ORIGINS, [
     "https://zizizhuji.pages.dev",
     "https://vocab-duel.pages.dev",
     "https://bxws-math.pages.dev",
+    "https://wenhao-xiaozhuan.pages.dev",
+    "https://wenyan-jieyou-zhan.pages.dev",
+    "https://science-hero.pages.dev",
+    "https://fanren-lianxin.pages.dev",
   ]);
 
   const missionOrigins = new Set(
@@ -123,6 +153,22 @@ test("妖域、學科與正式入口的對應不可被任務資料改寫", () =>
     [
       "bxws-math",
       { subject: "數學", url: "https://bxws-math.pages.dev/" },
+    ],
+    [
+      "wenhao-xiaozhuan",
+      { subject: "文學", url: "https://wenhao-xiaozhuan.pages.dev/" },
+    ],
+    [
+      "wenyan-jieyou-zhan",
+      { subject: "文言文", url: "https://wenyan-jieyou-zhan.pages.dev/" },
+    ],
+    [
+      "science-hero",
+      { subject: "自然科", url: "https://science-hero.pages.dev/" },
+    ],
+    [
+      "fanren-lianxin",
+      { subject: "自我領導力", url: "https://fanren-lianxin.pages.dev/" },
     ],
   ]);
 
