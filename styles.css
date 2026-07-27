@@ -140,6 +140,8 @@ img {
 }
 
 .mode-toggle {
+  display: grid;
+  gap: 1px;
   min-height: 42px;
   padding: 8px 14px;
   border: 1px solid var(--line);
@@ -147,19 +149,55 @@ img {
   color: var(--mist);
   background: rgba(255, 255, 255, 0.06);
   cursor: pointer;
+  text-align: right;
+}
+
+.mode-toggle strong {
+  font-size: 0.86rem;
+}
+
+.mode-toggle span {
+  color: var(--muted);
+  font-size: 0.68rem;
 }
 
 .role-panel {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  gap: 24px;
   padding: 16px 20px;
   border: 1px solid var(--line);
   border-radius: 22px;
   background: rgba(21, 21, 43, 0.68);
   box-shadow: 0 14px 34px rgba(5, 5, 20, 0.16);
   backdrop-filter: blur(18px);
+}
+
+.role-summary {
+  color: var(--paper);
+  cursor: pointer;
+  font-size: 0.88rem;
+  font-weight: 800;
+  list-style: none;
+}
+
+.role-summary::-webkit-details-marker {
+  display: none;
+}
+
+.role-summary::after {
+  margin-left: 8px;
+  color: var(--gold);
+  content: "＋";
+}
+
+.role-panel[open] .role-summary::after {
+  content: "－";
+}
+
+.role-panel__content {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 24px;
+  margin-top: 13px;
 }
 
 .role-intro {
@@ -176,6 +214,42 @@ img {
   border: 1px solid var(--line);
   border-radius: 16px;
   background: rgba(0, 0, 0, 0.12);
+}
+
+.world-guide {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 18px;
+  margin-top: 14px;
+  padding: 13px 16px;
+  border: 1px solid rgba(243, 183, 67, 0.24);
+  border-radius: 18px;
+  color: var(--paper);
+  background: rgba(243, 183, 67, 0.08);
+}
+
+.world-guide strong,
+.world-guide p {
+  margin: 0;
+}
+
+.world-guide p {
+  margin-top: 3px;
+  color: var(--muted);
+  font-size: 0.78rem;
+  line-height: 1.55;
+}
+
+.world-guide button {
+  min-height: 40px;
+  flex: 0 0 auto;
+  padding: 7px 12px;
+  border: 1px solid rgba(243, 183, 67, 0.36);
+  border-radius: 11px;
+  color: var(--paper);
+  background: rgba(5, 5, 20, 0.18);
+  cursor: pointer;
 }
 
 .role-button {
@@ -379,6 +453,45 @@ img {
   margin: 6px 0 20px;
 }
 
+.mission-switcher {
+  margin: -4px 0 18px;
+}
+
+.mission-switcher summary,
+.optional-followup summary {
+  width: fit-content;
+  color: #6f542d;
+  cursor: pointer;
+  font-size: 0.8rem;
+  font-weight: 900;
+}
+
+.mission-switcher__options {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 7px;
+  margin-top: 10px;
+}
+
+.mission-switcher__options button {
+  min-height: 42px;
+  padding: 8px 10px;
+  border: 1px solid rgba(80, 61, 43, 0.18);
+  border-radius: 11px;
+  color: #514758;
+  background: rgba(255, 255, 255, 0.52);
+  cursor: pointer;
+  font-size: 0.76rem;
+  font-weight: 800;
+  text-align: left;
+}
+
+.mission-switcher__options button[aria-pressed="true"] {
+  border-color: #a36a13;
+  color: #322309;
+  background: #f5cf77;
+}
+
 .mission-chip {
   padding: 6px 10px;
   border: 1px solid rgba(37, 32, 45, 0.13);
@@ -477,6 +590,72 @@ img {
   align-items: center;
   color: #665d6b;
   font-size: 0.78rem;
+}
+
+.checkin-feedback {
+  display: grid;
+  grid-template-columns: 62px minmax(0, 1fr);
+  align-items: center;
+  gap: 12px;
+  padding: 12px;
+  border: 1px solid rgba(60, 165, 141, 0.28);
+  border-radius: 15px;
+  color: #315f53;
+  background: rgba(60, 165, 141, 0.09);
+}
+
+.checkin-feedback--rest {
+  border-color: rgba(126, 147, 168, 0.34);
+  color: #546676;
+  background: rgba(126, 147, 168, 0.1);
+}
+
+.checkin-feedback p {
+  margin: 5px 0 0;
+  font-size: 0.78rem;
+  line-height: 1.5;
+}
+
+.checkin-reaction {
+  width: 62px;
+  aspect-ratio: 1;
+  margin: 0;
+  overflow: hidden;
+  border: 1px solid rgba(183, 119, 21, 0.28);
+  border-radius: 50%;
+  background: var(--paper-deep);
+}
+
+.checkin-reaction img {
+  width: 100%;
+  height: auto;
+  aspect-ratio: 1;
+  object-fit: cover;
+}
+
+.checkin-rewards {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+  margin-top: 7px;
+}
+
+.checkin-rewards span {
+  padding: 4px 7px;
+  border-radius: 999px;
+  color: #68470d;
+  background: rgba(243, 183, 67, 0.23);
+  font-size: 0.72rem;
+  font-weight: 900;
+}
+
+.optional-followup {
+  padding-top: 4px;
+}
+
+.optional-followup[open] {
+  display: grid;
+  gap: 10px;
 }
 
 .reflection-field {
@@ -1033,16 +1212,26 @@ img {
   z-index: 10;
   right: max(18px, calc((100vw - 1180px) / 2));
   bottom: 18px;
-  display: flex;
-  align-items: center;
-  gap: 12px;
-  padding: 10px 14px 10px 11px;
+  padding: 0;
   border: 1px solid rgba(243, 183, 67, 0.32);
   border-radius: 999px;
   color: var(--mist);
   background: rgba(21, 21, 43, 0.88);
   box-shadow: 0 14px 32px rgba(5, 5, 20, 0.34);
   backdrop-filter: blur(18px);
+}
+
+.progress-dock__toggle {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  min-height: 56px;
+  padding: 8px 14px 8px 9px;
+  border: 0;
+  border-radius: inherit;
+  color: inherit;
+  background: transparent;
+  cursor: pointer;
 }
 
 .lamp-count {
@@ -1056,7 +1245,7 @@ img {
   font-weight: 900;
 }
 
-.progress-dock span:last-child {
+.progress-dock__label {
   font-size: 0.82rem;
 }
 
@@ -1083,6 +1272,7 @@ img {
 
 .focus-mode .ink-pool,
 .focus-mode .role-panel,
+.focus-mode .world-guide,
 .focus-mode .guide-figure,
 .focus-mode .map-stage,
 .focus-mode .realm-section,
@@ -1169,20 +1359,34 @@ img {
   }
 
   .role-panel {
-    display: grid;
-    gap: 10px;
     padding: 14px;
     border-radius: 18px;
   }
 
+  .role-panel__content {
+    display: grid;
+    gap: 10px;
+  }
+
   .role-switcher {
     display: grid;
-    grid-template-columns: repeat(3, 1fr);
+    grid-template-columns: 1fr;
   }
 
   .role-button {
-    padding-inline: 6px;
+    padding-inline: 10px;
     font-size: 0.8rem;
+    text-align: left;
+  }
+
+  .world-guide {
+    display: grid;
+    gap: 10px;
+    padding: 13px 14px;
+  }
+
+  .world-guide button {
+    width: 100%;
   }
 
   .hero {
@@ -1200,6 +1404,10 @@ img {
 
   .mission-scroll h2 {
     font-size: 1.9rem;
+  }
+
+  .mission-switcher__options {
+    grid-template-columns: 1fr;
   }
 
   .map-stage {
@@ -1303,9 +1511,44 @@ img {
     width: 100%;
   }
 
+  .route-options,
+  .realm-card__routes {
+    grid-template-columns: 1fr;
+  }
+
+  .route-button,
+  .realm-card__route {
+    min-height: 48px;
+    padding-inline: 12px;
+    text-align: left;
+  }
+
   .progress-dock {
     right: 12px;
     bottom: 12px;
+    width: 56px;
+    max-width: calc(100vw - 24px);
+    overflow: hidden;
+    transition: width 180ms ease;
+  }
+
+  .progress-dock[data-expanded="true"] {
+    width: 225px;
+  }
+
+  .progress-dock__toggle {
+    width: 223px;
+    min-height: 54px;
+    padding: 7px 13px 7px 8px;
+  }
+
+  .lamp-count {
+    width: 38px;
+    flex: 0 0 38px;
+  }
+
+  .progress-dock__label {
+    white-space: nowrap;
   }
 }
 

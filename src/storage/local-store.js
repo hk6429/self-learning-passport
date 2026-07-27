@@ -14,6 +14,7 @@ export function createDefaultState() {
         passportStyle: "ink",
         reducedMotion: false,
         focusMode: false,
+        worldGuideDismissed: false,
       },
       activeDays: [],
       missionHistory: {},

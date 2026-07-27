@@ -44,6 +44,10 @@ export function buildHomeState({ state, now = new Date().toISOString() }) {
       primarySubject: state.student.primarySubject,
     },
     guide: characterDisplay(findCharacter("ink-tail-guide"), guideState),
+    guideCelebration: characterDisplay(
+      findCharacter("ink-tail-guide"),
+      "celebrate",
+    ),
     realms: REALM_CATALOG.map((realm) => ({
       ...realm,
       character: realm.primaryNpcId

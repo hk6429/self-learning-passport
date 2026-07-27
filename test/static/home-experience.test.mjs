@@ -102,3 +102,35 @@ test("主視覺角色保持正方形比例並融入霧海舞台，不侵入標�
   assert.match(guideImageRule, /aspect-ratio\s*:\s*1/);
   assert.match(guideImageRule, /object-fit\s*:\s*cover/);
 });
+
+test("學生可快速換妖域，落印後原地看見回饋，選填內容預設收合", async () => {
+  const [app, styles] = await Promise.all([
+    readProjectFile("src/app.js"),
+    readProjectFile("styles.css"),
+  ]);
+
+  assert.match(app, /換科目／自己選妖域/);
+  assert.match(app, /開始 \$\{mission\.durationMinutes\} 分鐘\$\{mission\.subject\}任務/);
+  assert.match(app, /已記錄，可以離開/);
+  assert.match(app, /有力氣再補（選填）/);
+  assert.match(app, /guideCelebration/);
+  assert.match(styles, /\.mission-switcher__options/);
+  assert.match(styles, /\.checkin-feedback/);
+  assert.match(styles, /\.optional-followup/);
+});
+
+test("回訪身份選擇與七燈計數器可收合，首訪提供白話詞語提示", async () => {
+  const [app, styles] = await Promise.all([
+    readProjectFile("src/app.js"),
+    readProjectFile("styles.css"),
+  ]);
+
+  assert.match(app, /目前身份：\$\{activeRoleLabel\}・切換身份/);
+  assert.match(app, /航線＝今天的任務・落印＝記錄完成・習光＝自己的成長點數/);
+  assert.match(app, /只看今天要做什麼/);
+  assert.match(app, /data-expanded/);
+  assert.match(styles, /\.role-summary/);
+  assert.match(styles, /\.world-guide/);
+  assert.match(styles, /\.progress-dock\[data-expanded="true"\]/);
+  assert.match(styles, /\.realm-card__routes\s*\{\s*grid-template-columns:\s*1fr/);
+});

@@ -11,7 +11,10 @@ test("首頁提供繁體中文、行動裝置與模組入口", async () => {
   assert.match(html, /<html[^>]+lang="zh-Hant-TW"/);
   assert.match(html, /<meta[^>]+name="viewport"/);
   assert.match(html, /<main[^>]+id="app"/);
-  assert.match(html, /<script[^>]+type="module"[^>]+src="\.\/src\/app\.js"/);
+  assert.match(
+    html,
+    /<script[^>]+type="module"[^>]+src="\.\/src\/app\.js(?:\?[^"]+)?"/,
+  );
 });
 
 test("專案提供樣式與可安全啟動的應用程式", async () => {

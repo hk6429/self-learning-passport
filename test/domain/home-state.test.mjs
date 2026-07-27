@@ -45,6 +45,8 @@ test("首頁狀態提供三身份入口、墨尾引導與學生偏好", () => {
     alt: "墨尾行者豎起圓耳，握著路牌站在霧海岔路前。",
     fallback: "墨尾行者正在霧海岔路等你，仍可直接選擇今日航線。",
   });
+  assert.equal(home.guideCelebration.displayState, "celebrate");
+  assert.match(home.guideCelebration.assetUrl, /\/celebrate\.webp$/);
 });
 
 test("首頁狀態提供七座妖域，前三域保留 idle 角色與三種時長航線", () => {
