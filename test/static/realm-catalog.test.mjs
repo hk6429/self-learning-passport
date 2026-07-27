@@ -49,21 +49,21 @@ test("三個角色主域的 siteId、subject 與主要 NPC 對應固定且唯一
   ), [
     {
       id: "ink-spider-cave",
-      name: "盤絲墨洞",
+      name: "字字珠璣",
       siteId: "zizizhuji",
       subject: "language",
       primaryNpcId: "ink-cave-spider-seven",
     },
     {
       id: "plantain-word-valley",
-      name: "芭蕉風語谷",
+      name: "字鬥英雄",
       siteId: "vocab-duel",
       subject: "english",
       primaryNpcId: "wind-valley-green-horn",
     },
     {
       id: "golden-ring-math-ridge",
-      name: "金箍算陣嶺",
+      name: "步學吾數",
       siteId: "bxws-math",
       subject: "math",
       primaryNpcId: "golden-ridge-tablet-turtle",

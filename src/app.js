@@ -948,7 +948,7 @@ function createRealmSection(home, activeRole) {
   titleWrap.append(
     node("p", { className: "eyebrow", text: "七域同行" }),
     node("h2", {
-      text: activeRole === "teacher" ? "安排班級今日航線" : "選一座今天想走的妖域",
+      text: activeRole === "teacher" ? "安排班級今日航線" : "今天練哪個網站？",
       attributes: { id: "realm-heading" },
     }),
   );
@@ -958,7 +958,7 @@ function createRealmSection(home, activeRole) {
       text:
         activeRole === "teacher"
           ? "所有任務都來自固定白名單；選擇時長，只安排合宜的共同節奏。"
-          : "七座主域都有 5、10、15 分鐘航線。沒有最強路線，只有今天最合適的那一條。",
+          : "七個網站都有 5、10、15 分鐘任務。沒有最強路線，只有今天最合適的那一條。",
     }),
   );
 
