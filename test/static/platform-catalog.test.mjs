@@ -45,3 +45,14 @@ test("每個可用平台都有角色、學習資訊、配圖與安全外連所�
     await access(new URL(`../..${platform.art.src}`, import.meta.url));
   }
 });
+
+test("每個平台都說明會練到的能力，並提供可篩選的時間與教學情境", () => {
+  for (const platform of LEARNING_PLATFORM_CATALOG) {
+    assert.ok(platform.learningOutcome);
+    assert.ok(platform.learningOutcome.length >= 12);
+    assert.ok(Array.isArray(platform.durationOptions));
+    assert.ok(platform.durationOptions.length > 0);
+    assert.ok(Array.isArray(platform.usageContexts));
+    assert.ok(platform.usageContexts.length > 0);
+  }
+});

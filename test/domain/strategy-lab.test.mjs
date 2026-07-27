@@ -5,6 +5,8 @@ import {
   STRATEGY_OPTIONS,
   STRATEGY_NOTICE,
   STRATEGY_REVIEW_OPTIONS,
+  getWeeklyReview,
+  recordWeeklyReview,
   reviewStrategy,
   selectStrategy,
 } from "../../src/domain/strategy-lab.js";
@@ -63,4 +65,49 @@ test("下一次回顧只接受保留、調整或放棄，並明示不代表學�
   ].map((option) => JSON.stringify(option)).join("");
 
   assert.doesNotMatch(optionText, /保證|證明|提升成績|學業進步/);
+});
+
+test("每七個活躍日提供一次低輸入策略回顧，完成或略過後不重複出現", () => {
+  const activeDays = Array.from(
+    { length: 14 },
+    (_, index) => `2026-07-${String(index + 1).padStart(2, "0")}`,
+  );
+
+  assert.equal(getWeeklyReview({ activeDays: activeDays.slice(0, 6) }), null);
+  assert.deepEqual(
+    getWeeklyReview({ activeDays: activeDays.slice(0, 7), reviews: [] }),
+    { milestone: 7 },
+  );
+
+  const firstReview = recordWeeklyReview([], {
+    milestone: 7,
+    strategyId: "quick-start",
+    reviewedAt: "2026-07-07T12:00:00.000Z",
+  });
+  assert.equal(
+    getWeeklyReview({
+      activeDays: activeDays.slice(0, 13),
+      reviews: firstReview,
+    }),
+    null,
+  );
+  assert.deepEqual(
+    getWeeklyReview({ activeDays, reviews: firstReview }),
+    { milestone: 14 },
+  );
+
+  const skippedReview = recordWeeklyReview(firstReview, {
+    milestone: 14,
+    strategyId: null,
+    reviewedAt: "2026-07-14T12:00:00.000Z",
+  });
+  assert.equal(getWeeklyReview({ activeDays, reviews: skippedReview }), null);
+  assert.deepEqual(
+    recordWeeklyReview(skippedReview, {
+      milestone: 14,
+      strategyId: "favorite-first",
+      reviewedAt: "2026-07-14T12:05:00.000Z",
+    }),
+    skippedReview,
+  );
 });

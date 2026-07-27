@@ -1,6 +1,10 @@
 import { buildHomeState } from "./domain/home-state.js";
 import { getDailyFlavor } from "./domain/daily-flavor.js";
-import { getPlatformsForRole } from "./domain/platform-guide.js";
+import {
+  PLATFORM_FILTERS,
+  filterPlatforms,
+  getPlatformsForRole,
+} from "./domain/platform-guide.js";
 import { getReturnVoyage, getSevenLights } from "./domain/progress.js";
 import {
   NORTH_STAR_OPTIONS,
@@ -11,7 +15,12 @@ import {
   getLatestMystery,
   recordPassportCheckIn,
 } from "./domain/passport-game.js";
-import { STRATEGY_OPTIONS } from "./domain/strategy-lab.js";
+import {
+  STRATEGY_OPTIONS,
+  WEEKLY_STRATEGY_OPTIONS,
+  getWeeklyReview,
+  recordWeeklyReview,
+} from "./domain/strategy-lab.js";
 import { selectRoleInterface } from "./ui/router.js";
 import { createRealmCard } from "./ui/realm-card.js";
 import { createLocalStore } from "./storage/local-store.js";
@@ -28,6 +37,11 @@ let localState = loaded.state;
 let selectedMissionId = null;
 let pendingReturnMissionId = null;
 let dockSafetyFrame = null;
+let teacherPlatformFilters = {
+  group: "all",
+  duration: "all",
+  context: "all",
+};
 
 const SUBJECT_SITE_IDS = Object.freeze({
   language: "zizizhuji",
@@ -685,6 +699,75 @@ function createMissionReturnPanel(mission, guideCelebration) {
   return panel;
 }
 
+function createWeeklyStrategyReview() {
+  const review = getWeeklyReview({
+    activeDays: localState.student.activeDays,
+    reviews: localState.student.weeklyStrategyReviews ?? [],
+  });
+  if (!review) return null;
+
+  const section = node("section", {
+    className: "weekly-strategy-review",
+    attributes: {
+      "aria-labelledby": `weekly-strategy-${review.milestone}`,
+    },
+  });
+  section.append(
+    node("p", {
+      className: "eyebrow",
+      text: `走過 ${review.milestone} 個活躍日・只記在這台裝置`,
+    }),
+    node("h3", {
+      text: "這七步，哪個開始方式最適合你？",
+      attributes: { id: `weekly-strategy-${review.milestone}` },
+    }),
+    node("p", {
+      text: "不是考試，也不判斷成績；選一個最接近的答案，幫下一段路更好開始。",
+    }),
+  );
+
+  const choices = node("div", {
+    className: "weekly-strategy-review__choices",
+    attributes: { role: "group", "aria-label": "選擇這一週的學習策略" },
+  });
+  const recordChoice = (strategyId) => {
+    const weeklyStrategyReviews = recordWeeklyReview(
+      localState.student.weeklyStrategyReviews ?? [],
+      {
+        milestone: review.milestone,
+        strategyId,
+        reviewedAt: new Date().toISOString(),
+      },
+    );
+    localState = {
+      ...localState,
+      student: {
+        ...localState.student,
+        weeklyStrategyReviews,
+      },
+    };
+    saveLocalState();
+    render();
+  };
+
+  for (const option of WEEKLY_STRATEGY_OPTIONS) {
+    const button = node("button", {
+      text: option.label,
+      attributes: { type: "button" },
+    });
+    button.addEventListener("click", () => recordChoice(option.id));
+    choices.append(button);
+  }
+  const skip = node("button", {
+    className: "weekly-strategy-review__skip",
+    text: "這次先不選",
+    attributes: { type: "button" },
+  });
+  skip.addEventListener("click", () => recordChoice(null));
+  section.append(choices, skip);
+  return section;
+}
+
 function createPassportSection(home) {
   const snapshot = buildPassportSnapshot(localState.student);
   const section = node("section", {
@@ -869,6 +952,10 @@ function createPassportSection(home) {
   collection.append(featuredCard, badgeCard, mysteryCard);
 
   section.append(heading, metrics, progress, settings, collection);
+  const weeklyStrategyReview = createWeeklyStrategyReview();
+  if (weeklyStrategyReview) {
+    section.append(weeklyStrategyReview);
+  }
 
   const cabinet = node("section", {
     className: "collection-cabinet",
@@ -1267,6 +1354,13 @@ function createPlatformCard(platform) {
   art.append(image);
 
   const body = node("div", { className: "platform-card__body" });
+  const learningOutcome = node("div", {
+    className: "platform-learning-outcome",
+  });
+  learningOutcome.append(
+    node("strong", { text: "這一站會練到什麼" }),
+    node("p", { text: platform.learningOutcome }),
+  );
   body.append(
     top,
     node("p", { className: "platform-subject", text: platform.subject }),
@@ -1276,14 +1370,93 @@ function createPlatformCard(platform) {
       className: "platform-description",
       text: platform.description,
     }),
+    learningOutcome,
     tags,
   );
   link.append(art, body);
   return link;
 }
 
-function createPlatformSection(activeRole, { includeCore = false } = {}) {
-  const platforms = getPlatformsForRole(activeRole, { includeCore });
+function createTeacherFilterPanel() {
+  const allPlatforms = getPlatformsForRole("teacher");
+  const visiblePlatforms = filterPlatforms(
+    allPlatforms,
+    teacherPlatformFilters,
+  );
+  const section = node("section", {
+    className: "platform-filter-panel",
+    attributes: { "aria-labelledby": "platform-filter-heading" },
+  });
+  section.append(
+    node("div", { className: "platform-filter-panel__copy" }),
+  );
+  const copy = section.firstElementChild;
+  copy.append(
+    node("p", { className: "eyebrow", text: "教學選站器" }),
+    node("h2", {
+      text: "依課堂情境找到合適平台",
+      attributes: { id: "platform-filter-heading" },
+    }),
+    node("p", {
+      text: "可同時選擇領域、時間與使用方式；篩選只改變畫面，不會保存學生資料。",
+    }),
+  );
+
+  const controls = node("div", {
+    className: "platform-filter-panel__controls",
+  });
+  for (const [key, label] of [
+    ["group", "學習領域"],
+    ["duration", "可用時間"],
+    ["context", "使用情境"],
+  ]) {
+    const field = node("label", { className: "platform-filter-field" });
+    field.append(node("span", { text: label }));
+    const select = node("select", {
+      attributes: { "aria-label": label },
+    });
+    for (const option of PLATFORM_FILTERS[key]) {
+      const optionNode = node("option", {
+        text: option.label,
+        attributes: { value: option.id },
+      });
+      select.append(optionNode);
+    }
+    select.value = teacherPlatformFilters[key];
+    select.addEventListener("change", () => {
+      teacherPlatformFilters = {
+        ...teacherPlatformFilters,
+        [key]: select.value,
+      };
+      render();
+      document.querySelector(".platform-filter-panel")?.scrollIntoView({
+        behavior: shouldReduceMotion() ? "auto" : "smooth",
+        block: "start",
+      });
+    });
+    field.append(select);
+    controls.append(field);
+  }
+  controls.append(
+    node("p", {
+      className: "platform-filter-status",
+      text: `目前顯示 ${visiblePlatforms.length}／${allPlatforms.length} 個平台`,
+      attributes: { "aria-live": "polite" },
+    }),
+  );
+  section.append(controls);
+  return section;
+}
+
+function createPlatformSection(
+  activeRole,
+  { includeCore = false, filters = null } = {},
+) {
+  const allPlatforms = getPlatformsForRole(activeRole, { includeCore });
+  const platforms =
+    activeRole === "teacher" && filters
+      ? filterPlatforms(allPlatforms, filters)
+      : allPlatforms;
   const content = {
     student: {
       eyebrow: "支線妖境",
@@ -1327,14 +1500,23 @@ function createPlatformSection(activeRole, { includeCore = false } = {}) {
   );
 
   const grid = node("div", { className: "platform-grid" });
-  for (const platform of platforms) {
-    grid.append(createPlatformCard(platform));
+  if (platforms.length === 0) {
+    grid.append(
+      node("p", {
+        className: "platform-filter-empty",
+        text: "這組條件暫時沒有延伸平台；可調整上方篩選，或查看仍符合條件的主域。",
+      }),
+    );
+  } else {
+    for (const platform of platforms) {
+      grid.append(createPlatformCard(platform));
+    }
   }
   section.append(heading, grid);
   return section;
 }
 
-function createRealmSection(home, activeRole) {
+function createRealmSection(home, activeRole, { filters = null } = {}) {
   const section = node("section", {
     className: "realm-section",
     attributes: { "aria-labelledby": "realm-heading" },
@@ -1359,7 +1541,26 @@ function createRealmSection(home, activeRole) {
   );
 
   const grid = node("div", { className: "realm-grid" });
-  for (const realm of home.realms) {
+  const realms =
+    activeRole === "teacher" && filters
+      ? (() => {
+          const visibleIds = new Set(
+            filterPlatforms(getPlatformsForRole("teacher"), filters)
+              .filter(({ coreRealm }) => coreRealm)
+              .map(({ id }) => id),
+          );
+          return home.realms.filter(({ siteId }) => visibleIds.has(siteId));
+        })()
+      : home.realms;
+  if (realms.length === 0) {
+    grid.append(
+      node("p", {
+        className: "platform-filter-empty",
+        text: "這組條件沒有主域任務；下方仍可能有符合的延伸平台。",
+      }),
+    );
+  }
+  for (const realm of realms) {
     const card = createRealmCard(
       document,
       { ...realm, missions: realm.routes },
@@ -1594,8 +1795,13 @@ function render() {
     if (activeRole === "teacher") {
       shell.append(
         createSupportStudio(activeRole),
-        createRealmSection(home, activeRole),
-        createPlatformSection(activeRole),
+        createTeacherFilterPanel(),
+        createRealmSection(home, activeRole, {
+          filters: teacherPlatformFilters,
+        }),
+        createPlatformSection(activeRole, {
+          filters: teacherPlatformFilters,
+        }),
       );
     }
     if (activeRole === "parent") {

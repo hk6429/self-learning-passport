@@ -25,6 +25,25 @@ export const STRATEGY_REVIEW_OPTIONS = Object.freeze([
 export const STRATEGY_NOTICE =
   "策略只記錄這次自我嘗試，不代表學業成效。";
 
+export const WEEKLY_STRATEGY_OPTIONS = Object.freeze([
+  Object.freeze({
+    id: "quick-start",
+    label: "先做 5 分鐘最好開始",
+  }),
+  Object.freeze({
+    id: "favorite-first",
+    label: "先選喜歡的科目比較有力氣",
+  }),
+  Object.freeze({
+    id: "ask-for-company",
+    label: "有人陪我開始會更穩",
+  }),
+  Object.freeze({
+    id: "still-exploring",
+    label: "我還在找適合的方法",
+  }),
+]);
+
 const VALID_STRATEGIES = new Set([
   ...STRATEGY_OPTIONS.map(({ id }) => id),
   null,
@@ -32,6 +51,10 @@ const VALID_STRATEGIES = new Set([
 const VALID_REVIEW_DECISIONS = new Set(
   STRATEGY_REVIEW_OPTIONS.map(({ id }) => id),
 );
+const VALID_WEEKLY_STRATEGIES = new Set([
+  ...WEEKLY_STRATEGY_OPTIONS.map(({ id }) => id),
+  null,
+]);
 
 export function selectStrategy({ status, strategy } = {}) {
   if (status !== "partial") {
@@ -59,4 +82,47 @@ export function reviewStrategy({ strategy, decision } = {}) {
   }
 
   return { strategy, decision };
+}
+
+export function getWeeklyReview({ activeDays = [], reviews = [] } = {}) {
+  const activeCount = new Set(activeDays).size;
+  const milestone = Math.floor(activeCount / 7) * 7;
+  if (
+    milestone < 7 ||
+    reviews.some((review) => review?.milestone === milestone)
+  ) {
+    return null;
+  }
+
+  return { milestone };
+}
+
+export function recordWeeklyReview(
+  reviews = [],
+  { milestone, strategyId, reviewedAt } = {},
+) {
+  if (
+    !Number.isInteger(milestone) ||
+    milestone < 7 ||
+    milestone % 7 !== 0
+  ) {
+    throw new RangeError("回顧里程碑必須是七的正倍數");
+  }
+  if (!VALID_WEEKLY_STRATEGIES.has(strategyId)) {
+    throw new RangeError("不支援的每週策略選項");
+  }
+  if (
+    typeof reviewedAt !== "string" ||
+    !Number.isFinite(Date.parse(reviewedAt))
+  ) {
+    throw new TypeError("回顧時間必須是有效日期");
+  }
+  if (reviews.some((review) => review?.milestone === milestone)) {
+    return reviews;
+  }
+
+  return [
+    ...reviews,
+    Object.freeze({ milestone, strategyId, reviewedAt }),
+  ];
 }

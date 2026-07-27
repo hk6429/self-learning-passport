@@ -17,6 +17,7 @@ export function createDefaultState() {
         worldGuideDismissed: false,
       },
       activeDays: [],
+      weeklyStrategyReviews: [],
       missionHistory: {},
       passport: {
         sealId: "ink-tail",

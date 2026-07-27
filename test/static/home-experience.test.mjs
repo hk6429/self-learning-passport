@@ -154,3 +154,20 @@ test("玩家建議形成首屏短循環、收藏櫃與不遮擋 HUD", async () =
   assert.match(styles, /\.relic-card/);
   assert.match(styles, /\.progress-dock\[data-safe="hidden"\]/);
 });
+
+test("平台卡呈現學習能力，老師可篩選，學生每七個活躍日可做策略回顧", async () => {
+  const [app, styles] = await Promise.all([
+    readProjectFile("src/app.js"),
+    readProjectFile("styles.css"),
+  ]);
+
+  assert.match(app, /這一站會練到什麼/);
+  assert.match(app, /PLATFORM_FILTERS/);
+  assert.match(app, /filterPlatforms/);
+  assert.match(app, /WEEKLY_STRATEGY_OPTIONS/);
+  assert.match(app, /getWeeklyReview/);
+  assert.match(app, /這七步，哪個開始方式最適合你/);
+  assert.match(styles, /\.platform-learning-outcome/);
+  assert.match(styles, /\.platform-filter-panel/);
+  assert.match(styles, /\.weekly-strategy-review/);
+});

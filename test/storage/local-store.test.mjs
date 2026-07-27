@@ -36,6 +36,7 @@ test("以注入的 storage adapter 正常保存與載入 schema v1", () => {
     defaultState.student.visualPreference.worldGuideDismissed,
     false,
   );
+  assert.deepEqual(defaultState.student.weeklyStrategyReviews, []);
   assert.deepEqual(defaultState.classes, {});
   assert.deepEqual(defaultState.teacher, { managedClasses: {} });
   assert.deepEqual(defaultState.syncQueue, []);

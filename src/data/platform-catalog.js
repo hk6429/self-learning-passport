@@ -6,6 +6,12 @@ const freezePlatform = (platform) =>
     ...platform,
     audiences: Object.freeze([...platform.audiences]),
     art: platform.art ? Object.freeze({ ...platform.art }) : null,
+    durationOptions: platform.durationOptions
+      ? Object.freeze([...platform.durationOptions])
+      : Object.freeze([]),
+    usageContexts: platform.usageContexts
+      ? Object.freeze([...platform.usageContexts])
+      : Object.freeze([]),
   });
 
 export const SOURCE_PLATFORM_CATALOG = Object.freeze(
@@ -18,6 +24,9 @@ export const SOURCE_PLATFORM_CATALOG = Object.freeze(
       caption: "古典文人宇宙",
       description:
         "走進古典文人的生命故事，以故事、漫畫與闖關方式認識作品背後的人。",
+      learningOutcome: "從故事線索連結作家生命、作品背景與文學特色。",
+      durationOptions: ["5", "10-20"],
+      usageContexts: ["self", "class"],
       stage: "國中以上",
       mode: "文學故事",
       duration: "建議 10–20 分鐘",
@@ -39,6 +48,9 @@ export const SOURCE_PLATFORM_CATALOG = Object.freeze(
       caption: "總編輯的最後一夜",
       description:
         "在限時情境與線索推理中完成密室任務，讓閱讀理解變成一場沉浸式冒險。",
+      learningOutcome: "整合多段閱讀線索，練習推論、判斷與說明依據。",
+      durationOptions: ["10-20", "flex"],
+      usageContexts: ["self", "class"],
       stage: "國中",
       mode: "閱讀解謎",
       duration: "可分段使用",
@@ -60,6 +72,9 @@ export const SOURCE_PLATFORM_CATALOG = Object.freeze(
       caption: "古人的解憂處方",
       description:
         "把古人的文字變成今日可理解、可運用的生活智慧，陪你讀懂文言也讀懂自己。",
+      learningOutcome: "理解文言語意，並把古人觀點連結到今日生活情境。",
+      durationOptions: ["5", "10-20"],
+      usageContexts: ["self", "class", "homeroom"],
       stage: "國中～高中",
       mode: "文言閱讀",
       duration: "建議 15–20 分鐘",
@@ -81,6 +96,9 @@ export const SOURCE_PLATFORM_CATALOG = Object.freeze(
       caption: "選擇之劍",
       description:
         "以角色扮演與選擇題推進冒險，在關鍵抉擇中練習七個習慣與自我領導力。",
+      learningOutcome: "在情境抉擇中辨認選擇後果，練習主動積極與自我領導。",
+      durationOptions: ["10-20"],
+      usageContexts: ["self", "homeroom"],
       stage: "國中",
       mode: "情境選擇",
       duration: "建議 10–20 分鐘",
@@ -102,6 +120,9 @@ export const SOURCE_PLATFORM_CATALOG = Object.freeze(
       caption: "打造你的習慣產線",
       description:
         "用工廠經營的方式累積好習慣，把抽象的自我管理轉化成看得見的成長。",
+      learningOutcome: "把抽象目標拆成可重複的小行動，觀察習慣累積的效果。",
+      durationOptions: ["5", "flex"],
+      usageContexts: ["self", "homeroom"],
       stage: "國中",
       mode: "養成經營",
       duration: "可分段使用",
@@ -123,6 +144,9 @@ export const SOURCE_PLATFORM_CATALOG = Object.freeze(
       caption: "仙俠七訣修習錄",
       description:
         "在仙俠修煉世界中鍛鍊選擇、目標與合作，把七個習慣化成一套心法。",
+      learningOutcome: "透過角色選擇練習目標設定、自我管理與合作思考。",
+      durationOptions: ["5", "10-20", "flex"],
+      usageContexts: ["self", "class", "homeroom"],
       stage: "國中以上",
       mode: "互動小說",
       duration: "可分段使用",
@@ -144,6 +168,9 @@ export const SOURCE_PLATFORM_CATALOG = Object.freeze(
       caption: "教師職涯模擬",
       description:
         "透過教師職涯中的真實選擇，探索專業判斷、班級經營與教育現場的多重挑戰。",
+      learningOutcome: "在職涯情境中比較教學選擇，反思專業判斷與班級經營。",
+      durationOptions: ["10-20", "flex"],
+      usageContexts: ["professional"],
       stage: "教師",
       mode: "職涯模擬",
       duration: "可分段使用",
@@ -165,6 +192,9 @@ export const SOURCE_PLATFORM_CATALOG = Object.freeze(
       caption: "班級經營修練場",
       description:
         "以情境任務陪新手導師練習親師溝通、學生輔導與班級事件的臨場判斷。",
+      learningOutcome: "練習親師溝通、學生輔導與班級事件的情境判斷。",
+      durationOptions: ["10-20", "flex"],
+      usageContexts: ["homeroom", "professional"],
       stage: "教師",
       mode: "導師情境",
       duration: "可分段使用",
@@ -186,6 +216,9 @@ export const SOURCE_PLATFORM_CATALOG = Object.freeze(
       caption: "英文單字練功坊",
       description:
         "用對戰、練功與升級節奏複習英文單字，讓記憶不只是反覆抄寫。",
+      learningOutcome: "在情境與反覆提取中累積單字辨識、字義與使用線索。",
+      durationOptions: ["5", "10-20"],
+      usageContexts: ["self", "class"],
       stage: "國小高年級～高中",
       mode: "單字練習",
       duration: "建議 10–15 分鐘",
@@ -207,6 +240,9 @@ export const SOURCE_PLATFORM_CATALOG = Object.freeze(
       caption: "國語文答題對戰",
       description:
         "以答題對戰練習字音、字形與成語，逐步累積國語文基礎能力。",
+      learningOutcome: "辨認常見字音、字形與成語用法，建立國語文基本功。",
+      durationOptions: ["5", "10-20"],
+      usageContexts: ["self", "class"],
       stage: "國小～國中",
       mode: "國語基本功",
       duration: "建議 10–15 分鐘",
@@ -228,6 +264,9 @@ export const SOURCE_PLATFORM_CATALOG = Object.freeze(
       caption: "奧林帕斯數術神殿",
       description:
         "在神殿冒險中挑戰數學題目，讓推理、計算與成就感一起升級。",
+      learningOutcome: "透過分段挑戰練習計算、規律辨識與數學推理。",
+      durationOptions: ["5", "10-20"],
+      usageContexts: ["self", "class"],
       stage: "國小～國中",
       mode: "數學技能樹",
       duration: "建議 10–20 分鐘",
@@ -265,6 +304,9 @@ export const SOURCE_PLATFORM_CATALOG = Object.freeze(
       caption: "自然科英雄養成",
       description:
         "從國小到國中自然科，以任務、戰鬥與成長系統陪學生持續練習。",
+      learningOutcome: "運用自然概念解題，練習觀察、推理與科學問題判讀。",
+      durationOptions: ["5", "10-20"],
+      usageContexts: ["self", "class"],
       stage: "國小～國中",
       mode: "自然練習",
       duration: "建議 10–20 分鐘",

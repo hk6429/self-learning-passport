@@ -943,6 +943,58 @@ img {
   background: rgba(243, 183, 67, 0.16);
 }
 
+.weekly-strategy-review {
+  margin-top: 20px;
+  padding: 18px;
+  border: 1px solid rgba(60, 165, 141, 0.36);
+  border-radius: 20px;
+  background:
+    radial-gradient(circle at 100% 0%, rgba(60, 165, 141, 0.18), transparent 42%),
+    rgba(5, 5, 20, 0.18);
+}
+
+.weekly-strategy-review h3 {
+  margin: 2px 0 8px;
+  font-family: ui-serif, "Noto Serif TC", serif;
+  font-size: clamp(1.3rem, 3vw, 1.8rem);
+}
+
+.weekly-strategy-review > p:last-of-type {
+  max-width: 44rem;
+  margin: 0;
+  color: var(--muted);
+  line-height: 1.65;
+}
+
+.weekly-strategy-review__choices {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 8px;
+  margin-top: 14px;
+}
+
+.weekly-strategy-review__choices button,
+.weekly-strategy-review__skip {
+  min-height: 46px;
+  padding: 9px 12px;
+  border: 1px solid rgba(60, 165, 141, 0.34);
+  border-radius: 13px;
+  color: var(--paper);
+  background: rgba(60, 165, 141, 0.1);
+  cursor: pointer;
+  font-weight: 800;
+  text-align: left;
+}
+
+.weekly-strategy-review__skip {
+  margin-top: 8px;
+  border-color: var(--line);
+  color: var(--muted);
+  background: transparent;
+  font-size: 0.78rem;
+  text-align: center;
+}
+
 .passport-collection {
   grid-template-columns: repeat(3, minmax(0, 1fr));
 }
@@ -1441,10 +1493,31 @@ img {
 }
 
 .platform-description {
-  margin: 16px 0 22px;
+  margin: 16px 0 14px;
   color: #cdc5d5;
   font-size: 0.9rem;
   line-height: 1.7;
+}
+
+.platform-learning-outcome {
+  margin-bottom: 18px;
+  padding: 12px 13px;
+  border-left: 3px solid color-mix(in srgb, var(--platform-accent) 72%, white);
+  border-radius: 0 12px 12px 0;
+  background: color-mix(in srgb, var(--platform-accent) 10%, transparent);
+}
+
+.platform-learning-outcome strong {
+  display: block;
+  color: color-mix(in srgb, var(--platform-accent) 70%, white);
+  font-size: 0.76rem;
+}
+
+.platform-learning-outcome p {
+  margin: 5px 0 0;
+  color: #ddd5e3;
+  font-size: 0.8rem;
+  line-height: 1.6;
 }
 
 .platform-tags {
@@ -1461,6 +1534,76 @@ img {
   color: var(--muted);
   background: rgba(5, 5, 20, 0.18);
   font-size: 0.72rem;
+}
+
+.platform-filter-panel {
+  display: grid;
+  grid-template-columns: minmax(0, 0.9fr) minmax(0, 1.5fr);
+  gap: 24px;
+  margin-top: 28px;
+  padding: clamp(20px, 3vw, 28px);
+  border: 1px solid rgba(60, 165, 141, 0.34);
+  border-radius: 26px;
+  background:
+    radial-gradient(circle at 100% 0%, rgba(60, 165, 141, 0.16), transparent 38%),
+    rgba(255, 255, 255, 0.045);
+  box-shadow: var(--shadow);
+}
+
+.platform-filter-panel h2 {
+  margin: 0;
+  font-family: ui-serif, "Noto Serif TC", serif;
+  font-size: clamp(1.55rem, 3vw, 2.35rem);
+}
+
+.platform-filter-panel__copy > p:last-child {
+  margin: 8px 0 0;
+  color: var(--muted);
+  line-height: 1.65;
+}
+
+.platform-filter-panel__controls {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  align-content: center;
+  gap: 10px;
+}
+
+.platform-filter-field {
+  display: grid;
+  gap: 6px;
+  color: var(--muted);
+  font-size: 0.76rem;
+  font-weight: 800;
+}
+
+.platform-filter-field select {
+  width: 100%;
+  min-height: 46px;
+  padding: 8px 34px 8px 11px;
+  border: 1px solid rgba(60, 165, 141, 0.34);
+  border-radius: 12px;
+  color: var(--paper);
+  background: #24243f;
+  font: inherit;
+}
+
+.platform-filter-status {
+  grid-column: 1 / -1;
+  margin: 2px 0 0;
+  color: #8bd9c7;
+  font-size: 0.82rem;
+  font-weight: 800;
+}
+
+.platform-filter-empty {
+  grid-column: 1 / -1;
+  margin: 0;
+  padding: 22px;
+  border: 1px dashed rgba(255, 248, 232, 0.2);
+  border-radius: 18px;
+  color: var(--muted);
+  text-align: center;
 }
 
 .realm-card {
@@ -1848,6 +1991,10 @@ img {
     grid-template-columns: 1fr;
   }
 
+  .weekly-strategy-review__choices {
+    grid-template-columns: 1fr;
+  }
+
   .return-player-hud {
     grid-template-columns: 1fr;
     gap: 12px;
@@ -1929,6 +2076,11 @@ img {
   }
 
   .platform-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .platform-filter-panel,
+  .platform-filter-panel__controls {
     grid-template-columns: 1fr;
   }
 
