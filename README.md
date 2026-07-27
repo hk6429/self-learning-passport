@@ -4,7 +4,14 @@
 
 ## 專案狀態
 
-目前正在依核准的妖界 2.0 規格實作，尚未建立正式外部資源，也尚未部署。
+妖界 2.0 首頁、三身份入口、三座學習妖域與今日航線已完成第一輪正式發布。
+
+## 正式網站
+
+- Cloudflare Pages：https://self-learning-passport.pages.dev/
+- Vercel：https://self-learning-passport.vercel.app/
+- Netlify：https://self-learning-passport.netlify.app/
+- GitHub：https://github.com/hk6429/self-learning-passport
 
 ## 資料邊界
 
@@ -49,4 +56,4 @@ npm run test:e2e
 
 ## 部署
 
-正式 GitHub repository、Cloudflare Pages、D1、Vercel 與 Netlify 將在取得明確部署授權後才建立。
+正式版本同步發布至 Cloudflare Pages、Vercel 與 Netlify。Cloudflare Pages 使用正式 D1 `self-learning-passport`；個人學習資料仍只保存在瀏覽器本機。
