@@ -26,21 +26,44 @@ test("完成與部分完成依台灣日期建立不重複的活躍日，休息�
   assert.deepEqual(progress.activeDays, ["2026-07-27"]);
 });
 
-test("14 日內七個非連續活躍日形成七燈，之後缺席也不清零", () => {
+test("任意七個非連續活躍日完成一冊七燈，長期中斷不清零", () => {
   const activeDays = [
     "2026-07-01",
-    "2026-07-03",
-    "2026-07-05",
-    "2026-07-07",
-    "2026-07-09",
-    "2026-07-11",
-    "2026-07-14",
+    "2026-07-13",
+    "2026-08-05",
+    "2026-09-07",
+    "2026-10-09",
+    "2026-11-11",
+    "2026-12-14",
   ];
 
   assert.deepEqual(getSevenLights({ activeDays }), {
     completed: true,
-    completedAt: "2026-07-14",
+    completedAt: "2026-12-14",
     litCount: 7,
+    completedBooks: 1,
+    currentBook: 2,
+  });
+});
+
+test("七燈完成後開啟下一冊，燈數依永久活躍日循環", () => {
+  assert.deepEqual(getSevenLights({
+    activeDays: [
+      "2026-01-01",
+      "2026-01-02",
+      "2026-01-03",
+      "2026-01-04",
+      "2026-01-05",
+      "2026-01-06",
+      "2026-01-07",
+      "2026-02-01",
+    ],
+  }), {
+    completed: true,
+    completedAt: "2026-01-07",
+    litCount: 1,
+    completedBooks: 1,
+    currentBook: 2,
   });
 });
 

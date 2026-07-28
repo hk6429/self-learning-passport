@@ -81,7 +81,7 @@ test("完成後才揭曉對應妖域的神祕線索，休息不會被當成失�
   assert.equal(getLatestMystery(rested), null);
 });
 
-test("複利護照把任務足跡換成習光、等級、妖印與下一個稀有解鎖", () => {
+test("複利護照把真實投入換成習光、行為階段、妖域足跡與收藏", () => {
   const student = createDefaultState().student;
   student.northStar = "habit";
   student.passport.sealId = "ink-tail";
@@ -90,7 +90,7 @@ test("複利護照把任務足跡換成習光、等級、妖印與下一個稀�
       {
         missionId: "ink-cave-first-thread",
         siteId: "zizizhuji",
-        durationMinutes: 5,
+        durationMinutes: 10,
         status: "complete",
         revealId: "ink-cave-first-thread-reveal",
         occurredAt: "2026-07-25T12:00:00.000Z",
@@ -111,18 +111,20 @@ test("複利護照把任務足跡換成習光、等級、妖印與下一個稀�
 
   const snapshot = buildPassportSnapshot(student);
 
-  assert.equal(snapshot.xp, 37);
-  assert.equal(snapshot.level, 1);
+  assert.equal(snapshot.xp, 30);
+  assert.equal(snapshot.growthStage.id, "adjusting");
   assert.equal(snapshot.stamps, 2);
+  assert.equal(snapshot.restMarks, 0);
   assert.equal(snapshot.exploredRealms, 2);
   assert.equal(snapshot.northStarLabel, "養成每天一小步");
   assert.equal(snapshot.seal.label, "墨尾妖印");
   assert.equal(snapshot.reveals.length, 2);
   assert.ok(snapshot.unlockedRelics.some(({ id }) => id === "mist-compass"));
   assert.equal(snapshot.nextRelic.unlockAt, 60);
-  assert.equal(snapshot.nextRelic.remainingXp, 23);
-  assert.equal(snapshot.nextRelic.progressXp, 37);
+  assert.equal(snapshot.nextRelic.remainingXp, 30);
+  assert.equal(snapshot.nextRelic.progressXp, 30);
   assert.equal(snapshot.collection.length >= 5, true);
+  assert.equal(snapshot.realmProgress.length, 2);
   assert.equal(snapshot.recentHistory.length, 2);
   assert.ok(
     snapshot.collection.every(
@@ -131,6 +133,68 @@ test("複利護照把任務足跡換成習光、等級、妖印與下一個稀�
   );
   assert.ok(snapshot.badges.some(({ id }) => id === "first-step"));
   assert.ok(snapshot.badges.some(({ id }) => id === "strategy-maker"));
+});
+
+test("休息只留下歇腳記號，不增加習光、妖印、七燈或收藏", () => {
+  const rested = recordPassportCheckIn(createDefaultState().student, {
+    mission,
+    status: "rest",
+    occurredAt: "2026-07-27T12:00:00.000Z",
+  });
+  const snapshot = buildPassportSnapshot(rested);
+
+  assert.equal(snapshot.xp, 0);
+  assert.equal(snapshot.stamps, 0);
+  assert.equal(snapshot.restMarks, 1);
+  assert.equal(snapshot.unlockedRelics.length, 0);
+  assert.deepEqual(rested.activeDays, []);
+});
+
+test("同日投入超過 30 分鐘後習光半額，60 分鐘後只留足跡", () => {
+  const student = createDefaultState().student;
+  student.missionHistory = {
+    "2026-07-27": [
+      {
+        missionId: "one",
+        siteId: "zizizhuji",
+        durationMinutes: 15,
+        status: "complete",
+        occurredAt: "2026-07-27T01:00:00.000Z",
+      },
+      {
+        missionId: "two",
+        siteId: "vocab-duel",
+        durationMinutes: 15,
+        status: "partial",
+        occurredAt: "2026-07-27T02:00:00.000Z",
+      },
+      {
+        missionId: "three",
+        siteId: "bxws-math",
+        durationMinutes: 15,
+        status: "complete",
+        occurredAt: "2026-07-27T03:00:00.000Z",
+      },
+      {
+        missionId: "four",
+        siteId: "science-hero",
+        durationMinutes: 15,
+        status: "partial",
+        occurredAt: "2026-07-27T04:00:00.000Z",
+      },
+      {
+        missionId: "five",
+        siteId: "fanren-lianxin",
+        durationMinutes: 5,
+        status: "complete",
+        occurredAt: "2026-07-27T05:00:00.000Z",
+      },
+    ],
+  };
+
+  const snapshot = buildPassportSnapshot(student);
+  assert.equal(snapshot.xp, 90);
+  assert.equal(snapshot.recentHistory[0].earnedXp, 0);
 });
 
 test("只能把已解鎖收藏與徽章設為護照代表，並保留取得日期", () => {

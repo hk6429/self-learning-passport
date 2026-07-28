@@ -1,4 +1,8 @@
+import { CLOSING_PROMPTS } from "./gamification-coach.js";
+
 const MAX_SHARED_MISSIONS = 14;
+const ASSIGNMENT_ROLES = new Set(["required", "choice"]);
+const MISSION_PHASES = new Set(["warmup", "core", "closing"]);
 
 function getCatalogMap(catalog) {
   if (!Array.isArray(catalog) || catalog.length === 0) {
@@ -26,10 +30,66 @@ function validateMissionIds(missionIds, catalog) {
   return { catalogMap, missionIds: uniqueIds };
 }
 
-export function createSharedPlanUrl({ baseUrl, missionIds, catalog } = {}) {
+function normalizeMissionSetting(
+  settings,
+  missionIds,
+  validValues,
+  fallback,
+  fieldName,
+) {
+  const source = settings ?? {};
+  return Object.fromEntries(
+    missionIds.map((missionId) => {
+      const value = source[missionId] ?? fallback;
+      if (!validValues.has(value)) {
+        throw new RangeError(`不支援的${fieldName}`);
+      }
+      return [missionId, value];
+    }),
+  );
+}
+
+export function createSharedPlanUrl({
+  baseUrl,
+  missionIds,
+  catalog,
+  assignmentByMission,
+  phaseByMission,
+  closingPromptId = "method",
+} = {}) {
   const validated = validateMissionIds(missionIds, catalog);
+  const assignments = normalizeMissionSetting(
+    assignmentByMission,
+    validated.missionIds,
+    ASSIGNMENT_ROLES,
+    "required",
+    "任務選擇規則",
+  );
+  const phases = normalizeMissionSetting(
+    phaseByMission,
+    validated.missionIds,
+    MISSION_PHASES,
+    "core",
+    "任務階段",
+  );
+  if (!CLOSING_PROMPTS.some(({ id }) => id === closingPromptId)) {
+    throw new RangeError("不支援的班級收束提問");
+  }
   const url = new URL(baseUrl);
   url.searchParams.set("missions", validated.missionIds.join(","));
+  const choiceIds = validated.missionIds.filter(
+    (missionId) => assignments[missionId] === "choice",
+  );
+  if (choiceIds.length > 0) {
+    url.searchParams.set("choice", choiceIds.join(","));
+  }
+  url.searchParams.set(
+    "phases",
+    validated.missionIds
+      .map((missionId) => `${missionId}:${phases[missionId]}`)
+      .join(","),
+  );
+  url.searchParams.set("closing", closingPromptId);
   return url.toString();
 }
 
@@ -39,12 +99,40 @@ export function readSharedPlan(candidate, { catalog } = {}) {
     .split(",")
     .filter(Boolean);
   const validated = validateMissionIds(missionIds, catalog);
+  const choiceIds = new Set(
+    (url.searchParams.get("choice") ?? "").split(",").filter(Boolean),
+  );
+  if ([...choiceIds].some((missionId) => !missionIds.includes(missionId))) {
+    throw new RangeError("任選任務必須包含在分享航線");
+  }
+  const phaseEntries = (url.searchParams.get("phases") ?? "")
+    .split(",")
+    .filter(Boolean)
+    .map((entry) => entry.split(":"));
+  const phaseByMission = Object.fromEntries(phaseEntries);
+  for (const [missionId, phase] of phaseEntries) {
+    if (!missionIds.includes(missionId) || !MISSION_PHASES.has(phase)) {
+      throw new RangeError("分享航線包含不支援的任務階段");
+    }
+  }
+  const closingPromptId = url.searchParams.get("closing") ?? "method";
+  const closingPrompt = CLOSING_PROMPTS.find(
+    ({ id }) => id === closingPromptId,
+  );
+  if (!closingPrompt) {
+    throw new RangeError("分享航線包含不支援的收束提問");
+  }
   return Object.freeze({
     missions: Object.freeze(
       validated.missionIds.map((missionId) =>
-        Object.freeze({ ...validated.catalogMap.get(missionId) }),
+        Object.freeze({
+          ...validated.catalogMap.get(missionId),
+          assignmentRole: choiceIds.has(missionId) ? "choice" : "required",
+          phase: phaseByMission[missionId] ?? "core",
+        }),
       ),
     ),
+    closingPrompt: Object.freeze({ ...closingPrompt }),
   });
 }
 

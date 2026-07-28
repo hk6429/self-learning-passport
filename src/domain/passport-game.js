@@ -1,4 +1,9 @@
 import { recordProgress } from "./progress.js";
+import {
+  buildRealmProgress,
+  getEffortLight,
+  getGrowthStage,
+} from "./gamification-coach.js";
 
 const CHECK_IN_STATUSES = new Set(["complete", "partial", "rest"]);
 const taipeiDateFormatter = new Intl.DateTimeFormat("en-CA", {
@@ -127,22 +132,33 @@ const flattenReports = (missionHistory = {}) =>
 const reportTime = (report) =>
   report.occurredAt ?? `${report.dateKey}T00:00:00.000Z`;
 
-const reportXp = ({ status, durationMinutes = 0 }) =>
-  status === "complete"
-    ? 20 + durationMinutes
-    : status === "partial"
-      ? 10 + Math.floor(durationMinutes / 2)
-      : 0;
+const annotateEffortRewards = (reports) => {
+  const dailyMinutes = new Map();
+  return reports.map((report) => {
+    const used = dailyMinutes.get(report.dateKey) ?? 0;
+    const earnedXp = getEffortLight({
+      durationMinutes: report.durationMinutes,
+      status: report.status,
+      dailyMinutesBefore: used,
+    });
+    if (report.status === "complete" || report.status === "partial") {
+      dailyMinutes.set(report.dateKey, used + report.durationMinutes);
+    }
+    return { ...report, earnedXp };
+  });
+};
 
 export function buildPassportSnapshot(student = {}) {
   const reports = flattenReports(student.missionHistory);
   const chronologicalReports = reports.sort((left, right) =>
     reportTime(left).localeCompare(reportTime(right)),
   );
-  const activeReports = chronologicalReports.filter(
+  const rewardedReports = annotateEffortRewards(chronologicalReports);
+  const activeReports = rewardedReports.filter(
     ({ status }) => status === "complete" || status === "partial",
   );
-  const xp = activeReports.reduce((sum, report) => sum + reportXp(report), 0);
+  const restReports = rewardedReports.filter(({ status }) => status === "rest");
+  const xp = activeReports.reduce((sum, report) => sum + report.earnedXp, 0);
   const exploredRealms = new Set(
     activeReports.map(({ siteId }) => siteId).filter(Boolean),
   ).size;
@@ -161,7 +177,7 @@ export function buildPassportSnapshot(student = {}) {
   const acquiredAtByRelic = new Map();
   let runningXp = 0;
   for (const report of activeReports) {
-    runningXp += reportXp(report);
+    runningXp += report.earnedXp;
     for (const relic of RELICS) {
       if (
         runningXp >= relic.unlockAt &&
@@ -238,13 +254,30 @@ export function buildPassportSnapshot(student = {}) {
     badges.find(({ id }) => id === student.passport?.featuredBadgeId) ??
     badges[0] ??
     null;
+  const realmProgress = [
+    ...new Set(activeReports.map(({ siteId }) => siteId).filter(Boolean)),
+  ].map((siteId) => ({
+    siteId,
+    ...buildRealmProgress(
+      activeReports.filter((report) => report.siteId === siteId),
+    ),
+  }));
+  const growthStage = getGrowthStage({
+    activeDays: student.activeDays ?? [],
+    exploredRealms,
+    hasStrategy: activeReports.some(({ strategy }) => strategy),
+    weeklyReviewCount: student.weeklyStrategyReviews?.length ?? 0,
+  });
 
   return {
     xp,
     level,
     levelProgress,
+    growthStage,
     stamps: activeReports.length,
+    restMarks: restReports.length,
     exploredRealms,
+    realmProgress,
     reveals,
     badges,
     seal,
@@ -259,7 +292,7 @@ export function buildPassportSnapshot(student = {}) {
           remainingXp: lockedRelic.unlockAt - xp,
         }
       : null,
-    recentHistory: [...chronologicalReports]
+    recentHistory: [...rewardedReports]
       .reverse()
       .slice(0, 6)
       .map((report) => ({
@@ -267,7 +300,7 @@ export function buildPassportSnapshot(student = {}) {
         siteId: report.siteId,
         status: report.status,
         occurredAt: reportTime(report),
-        earnedXp: reportXp(report),
+        earnedXp: report.earnedXp,
       })),
   };
 }
@@ -303,7 +336,14 @@ export function getLatestMystery(student = {}) {
 
 export function recordPassportCheckIn(
   student,
-  { mission, status, occurredAt, strategy = null, reflection = "" } = {},
+  {
+    mission,
+    status,
+    occurredAt,
+    strategy = null,
+    reflection = "",
+    evidenceId = null,
+  } = {},
 ) {
   if (!mission?.id || !Number.isInteger(mission.durationMinutes)) {
     throw new TypeError("落印需要有效任務");
@@ -327,6 +367,7 @@ export function recordPassportCheckIn(
     status,
     strategy,
     reflection,
+    evidenceId,
     revealId: status === "rest" ? null : mission.revealId,
     occurredAt,
   };

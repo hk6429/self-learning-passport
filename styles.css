@@ -2831,3 +2831,114 @@ img {
     transition-duration: 0.01ms !important;
   }
 }
+/* 2026-07-29：健康遊戲化與三身分陪伴層 */
+.skip-link {
+  position: fixed;
+  inset: 0 auto auto 1rem;
+  z-index: 100;
+  padding: .75rem 1rem;
+  background: #fff8df;
+  color: #2a251c;
+  transform: translateY(-130%);
+}
+.skip-link:focus { transform: translateY(.5rem); }
+.quick-start-panel,
+.learning-path-panel,
+.healthy-rest-card,
+.storage-notice {
+  width: min(1120px, calc(100% - 2rem));
+  margin: 1rem auto;
+  padding: clamp(1rem, 3vw, 1.5rem);
+  border: 1px solid rgba(114, 91, 52, .28);
+  border-radius: 1rem;
+  background: rgba(255, 251, 235, .94);
+  box-shadow: 0 .75rem 2rem rgba(45, 35, 20, .08);
+}
+.quick-start-doors,
+.checkin-closure-actions,
+.healthy-rest-card > div,
+.badge-paths,
+.privacy-actions,
+.teacher-plan-reorder,
+.encouragement-feedback {
+  display: flex;
+  flex-wrap: wrap;
+  gap: .65rem;
+}
+.quick-start-doors button,
+.checkin-closure-actions button,
+.badge-paths button,
+.healthy-rest-card button,
+.teacher-plan-reorder button,
+.encouragement-feedback button {
+  min-height: 44px;
+}
+.primary-closure {
+  background: #263b31;
+  color: #fff8df;
+}
+.secondary-mission-link {
+  display: inline-flex;
+  margin-inline-start: .75rem;
+  min-height: 44px;
+  align-items: center;
+}
+.fourteen-day-path {
+  display: grid;
+  grid-template-columns: repeat(7, minmax(0, 1fr));
+  gap: .45rem;
+  padding: 0;
+  list-style: none;
+}
+.day-path {
+  padding: .55rem .25rem;
+  border-radius: .55rem;
+  background: #eee8dc;
+  text-align: center;
+  font-size: .75rem;
+}
+.day-path--active { background: #f4d676; }
+.day-path--rest { border: 2px dashed #8a806e; background: #f8f4e9; }
+.privacy-layers {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: .75rem;
+  margin-block: 1rem;
+}
+.privacy-layers article,
+.teacher-facilitation-card,
+.teacher-budget-status,
+.parent-accompaniment {
+  padding: 1rem;
+  border-radius: .8rem;
+  background: rgba(255,255,255,.56);
+}
+.teacher-budget {
+  display: flex;
+  gap: .75rem;
+  align-items: center;
+  margin-block: 1rem;
+}
+.teacher-budget select { min-height: 44px; }
+.teacher-budget-status--over { border-inline-start: 4px solid #a85b35; }
+.progress-dock__targets {
+  display: none;
+  gap: .35rem;
+  padding: .5rem;
+}
+.progress-dock[data-expanded="true"] .progress-dock__targets {
+  display: grid;
+}
+.progress-dock__targets button { text-align: start; }
+.checkin-feedback--closed .checkin-mystery,
+.checkin-feedback--closed .checkin-next-target,
+.checkin-feedback--closed .checkin-closure-actions { display: none; }
+.storage-notice { display: flex; justify-content: space-between; align-items: center; }
+.reflection-share { display: flex; align-items: center; gap: .5rem; margin-top: .75rem; }
+
+@media (max-width: 700px) {
+  .privacy-layers { grid-template-columns: 1fr; }
+  .fourteen-day-path { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+  .quick-start-doors { display: grid; }
+  .secondary-mission-link { margin: .5rem 0 0; }
+}

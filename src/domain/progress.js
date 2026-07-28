@@ -24,29 +24,16 @@ export function recordProgress(progress, event) {
 
 export function getSevenLights(progress) {
   const activeDays = [...new Set(progress.activeDays ?? [])].sort();
-  let windowStart = 0;
-  let litCount = 0;
-
-  for (let windowEnd = 0; windowEnd < activeDays.length; windowEnd += 1) {
-    while (
-      toDayNumber(activeDays[windowEnd]) - toDayNumber(activeDays[windowStart]) > 13
-    ) {
-      windowStart += 1;
-    }
-
-    const windowCount = windowEnd - windowStart + 1;
-    litCount = Math.max(litCount, Math.min(windowCount, 7));
-
-    if (windowCount >= 7) {
-      return {
-        completed: true,
-        completedAt: activeDays[windowEnd],
-        litCount: 7,
-      };
-    }
-  }
-
-  return { completed: false, completedAt: null, litCount };
+  const completedBooks = Math.floor(activeDays.length / 7);
+  const remainder = activeDays.length % 7;
+  return {
+    completed: completedBooks > 0,
+    completedAt:
+      completedBooks > 0 ? activeDays[completedBooks * 7 - 1] : null,
+    litCount: remainder === 0 && activeDays.length > 0 ? 7 : remainder,
+    completedBooks,
+    currentBook: completedBooks + 1,
+  };
 }
 
 export function getReturnVoyage(progress, { now }) {
