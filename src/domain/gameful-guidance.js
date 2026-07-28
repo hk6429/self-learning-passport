@@ -8,7 +8,7 @@ const BADGE_PATHS = Object.freeze([
 
 export function getFairCheckInXp(status, durationMinutes = 0) {
   return status === "complete" || status === "partial"
-    ? 20 + Math.max(0, durationMinutes)
+    ? Math.max(0, durationMinutes) * 2
     : 0;
 }
 
@@ -60,7 +60,7 @@ export function recommendMission({ missions = [], student = {} } = {}) {
   } else if (student.northStar === "breakthrough") {
     candidates = candidates.filter(({ routeLevel }) => routeLevel === "challenge");
     reason = "你的北極星是突破卡點，先推薦挑戰航線。";
-  } else if (student.northStar === "method") {
+  } else if (student.northStar === "find-my-way") {
     const lastSite = latest?.siteId;
     candidates = candidates.filter(({ siteId }) => siteId !== lastSite);
     reason = "你的北極星是找到方法，先推薦不同領域。";

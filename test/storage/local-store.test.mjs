@@ -38,7 +38,13 @@ test("以注入的 storage adapter 正常保存與載入 schema v1", () => {
   );
   assert.deepEqual(defaultState.student.weeklyStrategyReviews, []);
   assert.deepEqual(defaultState.classes, {});
-  assert.deepEqual(defaultState.teacher, { managedClasses: {} });
+  assert.deepEqual(defaultState.teacher, {
+    managedClasses: {},
+    draftMissionIds: [],
+    assignmentByMission: {},
+    phaseByMission: {},
+    closingPromptId: "method",
+  });
   assert.deepEqual(defaultState.syncQueue, []);
 
   const emptyResult = store.load();

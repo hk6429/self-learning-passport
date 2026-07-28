@@ -33,6 +33,20 @@ import {
 import { qrcode } from "./vendor/qrcode.mjs";
 import { getRestSuggestion } from "./domain/healthy-immersion.js";
 import {
+  CLOSING_PROMPTS,
+  ENERGY_OPTIONS,
+  EVIDENCE_OPTIONS,
+  SUPPORT_NEED_OPTIONS,
+  buildLocalMetrics,
+  buildMissionBrief,
+  getMissionRecommendation,
+  getParentConversationPrompt,
+  getRepeatReflection,
+  getStrategyCarryover,
+  getTeacherLoadGuidance,
+} from "./domain/gamification-coach.js";
+import { appendMeasurement } from "./domain/local-measurement.js";
+import {
   PRIVACY_LAYERS,
   analyzeTeacherPlan,
   buildBadgePaths,
@@ -76,6 +90,14 @@ let teacherSelectedMissionIds = (
     ? localState.teacher.draftMissionIds
     : []
 ).filter((missionId) => missionById.has(missionId));
+let teacherAssignmentByMission = {
+  ...(localState.teacher?.assignmentByMission ?? {}),
+};
+let teacherPhaseByMission = {
+  ...(localState.teacher?.phaseByMission ?? {}),
+};
+let teacherClosingPromptId =
+  localState.teacher?.closingPromptId ?? CLOSING_PROMPTS[0].id;
 let sharedPlan = null;
 try {
   if (new URL(window.location.href).searchParams.has("missions")) {
@@ -236,9 +258,37 @@ function saveTeacherDraft() {
     teacher: {
       ...localState.teacher,
       draftMissionIds: [...teacherSelectedMissionIds],
+      assignmentByMission: { ...teacherAssignmentByMission },
+      phaseByMission: { ...teacherPhaseByMission },
+      closingPromptId: teacherClosingPromptId,
     },
   };
   saveLocalState();
+}
+
+function appendLocalEvent(type, context = {}) {
+  try {
+    const id =
+      window.crypto?.randomUUID?.() ??
+      `local_${Date.now()}_${Math.random().toString(36).slice(2, 10)}`;
+    localState = {
+      ...localState,
+      student: {
+        ...localState.student,
+        measurementEvents: appendMeasurement(
+          localState.student.measurementEvents ?? [],
+          {
+            id,
+            type,
+            occurredAt: new Date().toISOString(),
+            context,
+          },
+        ),
+      },
+    };
+  } catch (error) {
+    console.warn("本機健康循環事件未記錄。", error);
+  }
 }
 
 function getCorePlatform(siteId, role = "teacher") {
@@ -265,7 +315,91 @@ function getTodayReport(missionId) {
   return reports.find((report) => report.missionId === missionId) ?? null;
 }
 
+function getAllMissionReports() {
+  return Object.values(localState.student.missionHistory ?? {})
+    .flatMap((value) => (Array.isArray(value) ? value : [value]))
+    .filter(Boolean);
+}
+
+function createStrategyCarryoverPanel(mission, currentReport) {
+  const previous = getAllMissionReports()
+    .filter(
+      (report) =>
+        report.siteId === mission.siteId &&
+        report.strategy &&
+        report.occurredAt !== currentReport?.occurredAt,
+    )
+    .sort((left, right) =>
+      String(left.occurredAt).localeCompare(String(right.occurredAt)),
+    )
+    .at(-1);
+  if (
+    !previous ||
+    localState.student.strategyFollowups?.[previous.occurredAt]
+  ) {
+    return null;
+  }
+  const strategyLabel =
+    STRATEGY_OPTIONS.find(({ id }) => id === previous.strategy)?.label ??
+    "上次的方法";
+  const section = node("section", {
+    className: "strategy-carryover",
+    attributes: { "aria-label": "上次策略回問" },
+  });
+  section.append(
+    node("strong", { text: `上次你選擇「${strategyLabel}」` }),
+    node("p", { text: "這個方法對今天有什麼影響？不計分，也沒有標準答案。" }),
+  );
+  const actions = node("div", {
+    attributes: { role: "group", "aria-label": "回顧上次策略" },
+  });
+  for (const [id, label] of [
+    ["helpful", "有幫助"],
+    ["adjust", "再調整"],
+    ["drop", "先放下"],
+  ]) {
+    const button = node("button", {
+      text: label,
+      attributes: { type: "button" },
+    });
+    button.addEventListener("click", () => {
+      localState = {
+        ...localState,
+        student: {
+          ...localState.student,
+          strategyFollowups: {
+            ...(localState.student.strategyFollowups ?? {}),
+            [previous.occurredAt]: id,
+          },
+        },
+      };
+      appendLocalEvent("strategy_reviewed", {
+        missionId: mission.id,
+        routeLevel: mission.routeLevel,
+        outcome: null,
+      });
+      saveLocalState();
+      render();
+    });
+    actions.append(button);
+  }
+  section.append(actions);
+  return section;
+}
+
 function checkInMission(mission, status, additions = {}) {
+  appendLocalEvent("mission_reported", {
+    missionId: mission.id,
+    routeLevel: mission.routeLevel,
+    outcome: status === "rest" ? "skipped" : status,
+  });
+  if (additions.strategy) {
+    appendLocalEvent("strategy_selected", {
+      missionId: mission.id,
+      routeLevel: mission.routeLevel,
+      outcome: status,
+    });
+  }
   localState = {
     ...localState,
     student: {
@@ -299,6 +433,14 @@ function hasStudentHistory() {
 function markMissionLaunched(missionId) {
   pendingReturnMissionId = missionId;
   const startedAt = new Date().toISOString();
+  const mission = missionById.get(missionId);
+  if (mission) {
+    appendLocalEvent("mission_started", {
+      missionId,
+      routeLevel: mission.routeLevel,
+      outcome: null,
+    });
+  }
   localState = {
     ...localState,
     student: {
@@ -325,6 +467,12 @@ function focusPendingReturn() {
     .reverse()
     .find(({ missionId }) => missionId === pendingReturnMissionId);
   if (mission && latest) {
+    appendLocalEvent("mission_returned", {
+      missionId: mission.id,
+      routeLevel: mission.routeLevel,
+      elapsedMs: Math.max(0, Date.now() - Date.parse(latest.startedAt)),
+      outcome: null,
+    });
     restSuggestion = getRestSuggestion({
       selectedMinutes: mission.durationMinutes,
       elapsedMinutes: Math.max(
@@ -334,7 +482,15 @@ function focusPendingReturn() {
       sessionStarts: starts.map(({ startedAt }) => startedAt),
       now: new Date().toISOString(),
     });
-    if (restSuggestion) render();
+    if (restSuggestion) {
+      appendLocalEvent("rest_suggested", {
+        missionId: mission.id,
+        routeLevel: mission.routeLevel,
+        outcome: null,
+      });
+      saveLocalState();
+      render();
+    }
   }
   panel.classList.add("mission-return--welcome");
   panel.scrollIntoView({
@@ -572,7 +728,6 @@ function createRolePanel(home, activeRole) {
         : "先選擇今天的身份",
     }),
   );
-
   const content = node("div", { className: "role-panel__content" });
   content.append(
     node("p", {
@@ -792,53 +947,150 @@ function createReturnPlayerHud(home, mission) {
 
 function createQuickStartPanel(home, mission) {
   const allMissions = home.realms.flatMap(({ routes }) => routes);
-  const recommendation = recommendMission({
-    missions: allMissions,
-    student: localState.student,
+  const sameRealmMissions = allMissions.filter(
+    ({ siteId }) => siteId === mission.siteId,
+  );
+  const weeklyStrategy = getStrategyCarryover(
+    localState.student.weeklyStrategyReviews ?? [],
+  );
+  const energyId = localState.student.gameplay?.energyId ?? "quick";
+  const recommendation = getMissionRecommendation({
+    missions: sameRealmMissions,
+    energyId,
+    northStar: localState.student.northStar,
+    weeklyStrategyId: weeklyStrategy?.strategyId ?? null,
   });
   const section = node("section", {
     className: "quick-start-panel",
     attributes: { "aria-labelledby": "quick-start-heading" },
   });
   section.append(
-    node("p", { className: "eyebrow", text: "三扇門・建議不是規定" }),
+    node("p", { className: "eyebrow", text: "今天的心力・建議不是規定" }),
     node("h2", {
       text: "今天想怎麼開始？",
       attributes: { id: "quick-start-heading" },
     }),
     node("p", {
       className: "recommendation-reason",
-      text: recommendation?.reason ?? "先選一條今天走得動的路。",
+      text: recommendation.reason,
     }),
   );
   const doors = node("div", {
     className: "quick-start-doors",
     attributes: { role: "group", "aria-label": "快速開始方式" },
   });
-  const recent = allMissions.find(
-    ({ id }) => id === localState.student.pendingReturn?.missionId,
-  ) ?? mission;
-  const five = allMissions.find(
-    ({ siteId, durationMinutes }) =>
-      siteId === mission.siteId && durationMinutes === 5,
-  ) ?? allMissions[0];
-  for (const option of [
-    { label: "延續上次", mission: recent },
-    { label: "先走 5 分鐘", mission: five },
-    { label: "依北極星建議", mission: recommendation?.mission ?? mission },
-  ]) {
+  for (const option of ENERGY_OPTIONS) {
+    const optionMission =
+      sameRealmMissions.find(
+        ({ durationMinutes }) =>
+          durationMinutes === option.durationMinutes,
+      ) ?? mission;
     const button = node("button", {
-      text: `${option.label}｜${option.mission.subject}`,
-      attributes: { type: "button" },
+      text: `${option.label}｜${option.durationMinutes} 分鐘`,
+      attributes: {
+        type: "button",
+        "aria-pressed": String(energyId === option.id),
+      },
     });
     button.addEventListener("click", () => {
-      selectedMissionId = option.mission.id;
+      localState = {
+        ...localState,
+        student: {
+          ...localState.student,
+          dailyMinutes: option.durationMinutes,
+          gameplay: {
+            ...(localState.student.gameplay ?? {}),
+            energyId: option.id,
+          },
+        },
+      };
+      selectedMissionId = optionMission.id;
+      saveLocalState();
       render();
       document.querySelector("#daily-mission-title")?.focus();
     });
     doors.append(button);
   }
-  section.append(doors);
+  const suggested = node("button", {
+    className: "quick-start-recommendation",
+    text: `採用推薦：${recommendation.mission.title}`,
+    attributes: { type: "button" },
+  });
+  suggested.addEventListener("click", () => {
+    selectedMissionId = recommendation.mission.id;
+    render();
+    document.querySelector("#daily-mission-title")?.focus();
+  });
+  section.append(doors, suggested);
+  return section;
+}
+
+function createSupportNeedCard() {
+  const selectedId =
+    localState.student.gameplay?.supportNeedId ?? SUPPORT_NEED_OPTIONS[0].id;
+  const selected =
+    SUPPORT_NEED_OPTIONS.find(({ id }) => id === selectedId) ??
+    SUPPORT_NEED_OPTIONS[0];
+  const section = node("section", {
+    className: "support-need-card",
+    attributes: { "aria-labelledby": "support-need-heading" },
+  });
+  section.append(
+    node("p", { className: "eyebrow", text: "我的同行方式・只記在本機" }),
+    node("h2", {
+      text: "我現在需要怎樣的陪伴？",
+      attributes: { id: "support-need-heading" },
+    }),
+  );
+  const choices = node("div", {
+    className: "support-need-options",
+    attributes: { role: "group", "aria-label": "選擇需要的陪伴方式" },
+  });
+  for (const option of SUPPORT_NEED_OPTIONS) {
+    const button = node("button", {
+      text: option.label,
+      attributes: {
+        type: "button",
+        "aria-pressed": String(option.id === selected.id),
+      },
+    });
+    button.addEventListener("click", () => {
+      localState = {
+        ...localState,
+        student: {
+          ...localState.student,
+          gameplay: {
+            ...(localState.student.gameplay ?? {}),
+            supportNeedId: option.id,
+          },
+        },
+      };
+      saveLocalState();
+      render();
+    });
+    choices.append(button);
+  }
+  const preview = node("blockquote", {
+    className: "support-need-preview",
+    text: selected.message,
+  });
+  const status = node("p", {
+    className: "support-need-status",
+    attributes: { "aria-live": "polite" },
+  });
+  const copy = node("button", {
+    text: "複製我的同行需求卡",
+    attributes: { type: "button" },
+  });
+  copy.addEventListener("click", async () => {
+    try {
+      await navigator.clipboard.writeText(selected.message);
+      status.textContent = "已複製；你可以自己決定要不要傳給同行者。";
+    } catch {
+      status.textContent = "無法自動複製，可直接選取上方文字。";
+    }
+  });
+  section.append(choices, preview, copy, status);
   return section;
 }
 
@@ -936,6 +1188,32 @@ function createLearningPathPanel() {
   return section;
 }
 
+function createMissionLearningBrief(mission) {
+  const brief = buildMissionBrief({
+    mission,
+    learningOutcome: getMissionLearningOutcome(mission),
+  });
+  const section = node("section", {
+    className: "mission-learning-brief",
+    attributes: { "aria-label": "任務學習目標與完成方式" },
+  });
+  section.append(
+    node("strong", { text: "今天會練到什麼" }),
+    node("p", { text: brief.learningOutcome }),
+    node("strong", { text: "做到什麼算完成" }),
+    node("p", { text: brief.doneDefinition }),
+  );
+  const reward = node("details", { className: "mission-reward-details" });
+  reward.append(
+    node("summary", { text: "查看投入紀錄方式" }),
+    node("p", {
+      text: `${brief.rewardNote} 這次完整或部分完成皆記錄 ${getMissionReward(mission)} 習光。`,
+    }),
+  );
+  section.append(reward);
+  return section;
+}
+
 function createStudentHero(home, mission, focusMode) {
   const hero = node("section", {
     className: "hero",
@@ -985,7 +1263,11 @@ function createStudentHero(home, mission, focusMode) {
             : "標準航線",
     }),
   );
-  scroll.append(meta, createMissionOutlook(mission));
+  scroll.append(
+    createMissionLearningBrief(mission),
+    meta,
+    createMissionOutlook(mission),
+  );
   const newTab = node("a", {
     className: "secondary-mission-link",
     text: "另開分頁",
@@ -1132,6 +1414,22 @@ function createMissionReturnPanel(mission, guideCelebration) {
         : "從外站回來後，選擇最符合今天情況的一項。",
     }),
   );
+  const repeat = getRepeatReflection(
+    getAllMissionReports().filter(
+      ({ occurredAt }) => occurredAt !== report?.occurredAt,
+    ),
+    mission.id,
+  );
+  if (repeat) {
+    panel.append(
+      node("aside", {
+        className: "repeat-reflection",
+        text: repeat.prompt,
+      }),
+    );
+  }
+  const strategyCarryover = createStrategyCarryoverPanel(mission, report);
+  if (strategyCarryover) panel.append(strategyCarryover);
 
   const choices = node("div", {
     className: "checkin-options",
@@ -1170,22 +1468,23 @@ function createMissionReturnPanel(mission, guideCelebration) {
       attributes: { role: "group", "aria-label": "快速留下學習證據" },
     });
     evidenceOptions.append(node("span", { text: "今天最接近：" }));
-    for (const evidence of [
-      "我弄懂了一個重點",
-      "我還有一點卡住",
-      "我找到新的開始方法",
-    ]) {
+    // 既有快速證據「我弄懂了一個重點」由 EVIDENCE_OPTIONS 保留並集中管理。
+    for (const evidence of EVIDENCE_OPTIONS) {
       const button = node("button", {
-        text: evidence,
+        text: evidence.label,
         attributes: {
           type: "button",
-          "aria-pressed": String(structured.evidence === evidence),
+          "aria-pressed": String(
+            report.evidenceId === evidence.id ||
+              structured.evidence === evidence.label,
+          ),
         },
       });
       button.addEventListener("click", () =>
         checkInMission(mission, report.status, {
           strategy: report.strategy ?? null,
-          reflection: { ...structured, evidence },
+          evidenceId: evidence.id,
+          reflection: { ...structured, evidence: evidence.label },
         }),
       );
       evidenceOptions.append(button);
@@ -1208,6 +1507,7 @@ function createMissionReturnPanel(mission, guideCelebration) {
         button.addEventListener("click", () =>
           checkInMission(mission, "partial", {
             strategy: option.id,
+            evidenceId: report.evidenceId ?? null,
             reflection: structured,
           }),
         );
@@ -1235,6 +1535,7 @@ function createMissionReturnPanel(mission, guideCelebration) {
     save.addEventListener("click", () =>
       checkInMission(mission, report.status, {
         strategy: report.strategy ?? null,
+        evidenceId: report.evidenceId ?? null,
         reflection: { ...structured, note: input.value.trim() },
       }),
     );
@@ -1250,6 +1551,7 @@ function createMissionReturnPanel(mission, guideCelebration) {
     checkbox.addEventListener("change", () =>
       checkInMission(mission, report.status, {
         strategy: report.strategy ?? null,
+        evidenceId: report.evidenceId ?? null,
         reflection: {
           ...structured,
           shareWithParent: checkbox.checked,
@@ -2980,6 +3282,7 @@ function render() {
     if (healthyRest) main.append(healthyRest);
     main.append(
       createQuickStartPanel(home, mission),
+      createSupportNeedCard(),
       createStudentHero(
         home,
         mission,

@@ -12,8 +12,8 @@ import {
 } from "../../src/domain/gameful-guidance.js";
 
 test("完成與部分完成得到相同的誠實回站習光", () => {
-  assert.equal(getFairCheckInXp("complete", 5), 25);
-  assert.equal(getFairCheckInXp("partial", 5), 25);
+  assert.equal(getFairCheckInXp("complete", 5), 10);
+  assert.equal(getFairCheckInXp("partial", 5), 10);
   assert.equal(getFairCheckInXp("rest", 5), 0);
 });
 

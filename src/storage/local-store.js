@@ -19,6 +19,12 @@ export function createDefaultState() {
       favoriteMissionIds: [],
       trackedBadgeId: null,
       missionStarts: [],
+      gameplay: {
+        energyId: "quick",
+        supportNeedId: "self",
+        collectionExpanded: false,
+      },
+      strategyFollowups: {},
       activeDays: [],
       weeklyStrategyReviews: [],
       missionHistory: {},
@@ -37,6 +43,10 @@ export function createDefaultState() {
     classes: {},
     teacher: {
       managedClasses: {},
+      draftMissionIds: [],
+      assignmentByMission: {},
+      phaseByMission: {},
+      closingPromptId: "method",
     },
     syncQueue: [],
   };

@@ -20,7 +20,7 @@ export const ENERGY_OPTIONS = Object.freeze([
 ]);
 
 export const EVIDENCE_OPTIONS = Object.freeze([
-  Object.freeze({ id: "explain", label: "我能說明一個重點" }),
+  Object.freeze({ id: "explain", label: "我弄懂了一個重點" }),
   Object.freeze({ id: "question", label: "我仍有一個疑問" }),
   Object.freeze({ id: "practice", label: "我想再練一次" }),
 ]);
@@ -208,9 +208,15 @@ export function getRepeatReflection(reports = [], missionId) {
     )
     .at(-1);
   if (!previous) return null;
+  const reflection =
+    typeof previous.reflection === "string"
+      ? previous.reflection
+      : previous.reflection?.evidence ||
+        previous.reflection?.note ||
+        "留下足跡";
   return {
     previous,
-    prompt: `上次你選擇「${previous.reflection || "留下足跡"}」。這次哪裡不同？`,
+    prompt: `上次你選擇「${reflection}」。這次哪裡不同？`,
   };
 }
 
