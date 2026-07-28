@@ -52,6 +52,10 @@ function createRealmFigure(documentAdapter, realmViewModel) {
     image.className = "realm-card__npc-image realm-card__art-image";
     image.src = realmViewModel.art.src;
     image.alt = realmViewModel.art.alt;
+    image.loading = "lazy";
+    image.decoding = "async";
+    image.width = 1280;
+    image.height = 801;
     image.addEventListener("error", () => {
       image.hidden = true;
       fallback.hidden = false;
@@ -79,6 +83,10 @@ function createRealmFigure(documentAdapter, realmViewModel) {
     image.className = "realm-card__npc-image";
     image.src = display.src;
     image.alt = display.alt;
+    image.loading = "lazy";
+    image.decoding = "async";
+    image.width = 1024;
+    image.height = 1024;
     fallback.hidden = true;
 
     image.addEventListener("error", () => {
@@ -120,7 +128,7 @@ export function createRealmCard(
 
   const heading = createTextElement(
     documentAdapter,
-    "h2",
+    "h3",
     realmViewModel.name,
     { className: "realm-card__title" },
   );
@@ -136,10 +144,19 @@ export function createRealmCard(
     `${realmViewModel.stage}・${realmViewModel.learningOutcome}・每次 5／10／15 分鐘`,
     { className: "realm-card__learning" },
   );
-  const routes = documentAdapter.createElement("div");
+  const routes = documentAdapter.createElement("details");
   routes.className = "realm-card__routes";
-  routes.setAttribute("role", "group");
-  routes.setAttribute("aria-label", `${realmViewModel.name}今日航線`);
+  const routeSummary = createTextElement(
+    documentAdapter,
+    "summary",
+    "選擇 5／10／15 分鐘航線",
+    { className: "realm-card__routes-summary" },
+  );
+  const routeOptions = documentAdapter.createElement("div");
+  routeOptions.className = "realm-card__route-options";
+  routeOptions.setAttribute("role", "group");
+  routeOptions.setAttribute("aria-label", `${realmViewModel.name}今日航線`);
+  routes.append(routeSummary, routeOptions);
 
   for (const mission of missions) {
     const button = createTextElement(
@@ -155,7 +172,7 @@ export function createRealmCard(
     );
     button.setAttribute("data-mission-id", mission.id);
     button.addEventListener("click", () => onSelect(mission.id));
-    routes.append(button);
+    routeOptions.append(button);
   }
 
   card.append(

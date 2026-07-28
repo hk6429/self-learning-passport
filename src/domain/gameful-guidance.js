@@ -23,6 +23,8 @@ export function normalizeReflection(reflection) {
       stuckReason: String(reflection.stuckReason ?? ""),
       nextStep: String(reflection.nextStep ?? ""),
       note: String(reflection.note ?? ""),
+      artifact: String(reflection.artifact ?? ""),
+      exitTicket: String(reflection.exitTicket ?? ""),
       shareWithParent: reflection.shareWithParent === true,
     };
   }
@@ -31,6 +33,8 @@ export function normalizeReflection(reflection) {
     stuckReason: "",
     nextStep: "",
     note: typeof reflection === "string" ? reflection : "",
+    artifact: "",
+    exitTicket: "",
     shareWithParent: false,
   };
 }

@@ -132,7 +132,7 @@ test("回訪身份選擇與七燈計數器可收合，首訪提供白話詞語�
   assert.match(styles, /\.role-summary/);
   assert.match(styles, /\.world-guide/);
   assert.match(styles, /\.progress-dock\[data-expanded="true"\]/);
-  assert.match(styles, /\.realm-card__routes\s*\{\s*grid-template-columns:\s*1fr/);
+  assert.match(styles, /\.realm-card__route-options\s*\{\s*grid-template-columns:\s*1fr/);
 });
 
 test("玩家建議形成首屏短循環、收藏櫃與不遮擋 HUD", async () => {
@@ -188,6 +188,98 @@ test("手機與平板把今日任務排在前面，並提供足夠大的觸控�
   );
   assert.match(styles, /env\(safe-area-inset-bottom\)/);
   assert.match(styles, /-webkit-text-size-adjust:\s*100%/);
+});
+
+test("頁面只有一個主要內容地標，並提供三身分的頁內導覽", async () => {
+  const [index, app, styles] = await Promise.all([
+    readProjectFile("index.html"),
+    readProjectFile("src/app.js"),
+    readProjectFile("styles.css"),
+  ]);
+
+  assert.match(index, /<div id="app">/);
+  assert.doesNotMatch(index, /<main id="app">/);
+  assert.match(app, /createSectionNavigation/);
+  assert.match(app, /今天任務/);
+  assert.match(app, /我的護照/);
+  assert.match(app, /班級航線/);
+  assert.match(app, /陪伴重點/);
+  assert.match(styles, /\.section-navigation/);
+});
+
+test("回訪者可收合節奏推薦與七燈細節，所有收合控制有可見焦點與觸控高度", async () => {
+  const [app, styles] = await Promise.all([
+    readProjectFile("src/app.js"),
+    readProjectFile("styles.css"),
+  ]);
+
+  assert.match(app, /className:\s*"quick-start-panel"/);
+  assert.match(app, /quick-start-summary/);
+  assert.match(app, /learning-path-summary/);
+  assert.match(styles, /summary:focus-visible/);
+  assert.match(styles, /\.quick-start-summary[^}]*min-height:\s*44px/s);
+  assert.match(styles, /\.learning-path-summary[^}]*min-height:\s*44px/s);
+  assert.match(styles, /\.offline-fallback summary[^}]*min-height:\s*44px/s);
+  assert.match(styles, /\.student-dialogue-card__copy[^}]*min-height:\s*44px/s);
+});
+
+test("快速開始按鈕使用品牌色並清楚區分目前選擇與主要行動", async () => {
+  const [app, styles] = await Promise.all([
+    readProjectFile("src/app.js"),
+    readProjectFile("styles.css"),
+  ]);
+
+  assert.doesNotMatch(app, /recommendation\.mission/);
+  assert.match(app, /getMissionLearningOutcome\(recommendation\)/);
+  assert.match(styles, /\.quick-start-doors button\[aria-pressed="true"\]/);
+  assert.match(styles, /\.quick-start-recommendation\s*\{[^}]*background/s);
+  assert.match(styles, /\.quick-start-recommendation\s*\{[^}]*color/s);
+});
+
+test("學生進度浮層不會出現在教師或家長頁，親師主要控制維持 44px", async () => {
+  const [app, styles] = await Promise.all([
+    readProjectFile("src/app.js"),
+    readProjectFile("styles.css"),
+  ]);
+
+  assert.match(
+    app,
+    /if \(activeRole === "student" && !localState\.student\.gameplay\?\.restMode\) \{\s*shell\.append\(createProgressDock\(\)\)/s,
+  );
+  assert.match(styles, /\.support-confirm[^}]*min-height:\s*44px/s);
+  assert.match(styles, /\.reflection-share[^}]*min-height:\s*44px/s);
+  assert.match(styles, /\.reflection-share input[^}]*width:\s*24px/s);
+});
+
+test("反思欄位標籤與任務連結朗讀名稱符合實際互動", async () => {
+  const app = await readProjectFile("src/app.js");
+
+  assert.match(app, /const reflectionId = `reflection-\$\{mission\.id\}`/);
+  assert.match(app, /attributes: \{ for: reflectionId \}/);
+  assert.match(app, /id: reflectionId/);
+  assert.match(app, /compact\s*\?\s*`開新分頁前往/);
+  assert.match(app, /:\s*`前往\$\{mission\.subject\}任務/);
+});
+
+test("平板使用雙欄主域與精簡平台卡，隱私設定預設收合", async () => {
+  const [app, styles] = await Promise.all([
+    readProjectFile("src/app.js"),
+    readProjectFile("styles.css"),
+  ]);
+
+  assert.match(app, /className:\s*"privacy-disclosure"/);
+  assert.match(
+    styles,
+    /@media \(max-width:\s*960px\)[\s\S]*\.realm-grid\s*\{[^}]*repeat\(2/s,
+  );
+  assert.match(
+    styles,
+    /@media \(max-width:\s*960px\)[\s\S]*\.platform-description\s*\{\s*display:\s*none/s,
+  );
+  assert.match(
+    styles,
+    /\.privacy-disclosure:not\(\[open\]\) > :not\(summary\)/,
+  );
 });
 
 test("首頁提供學生、家長與老師可切換的使用說明書", async () => {
@@ -258,4 +350,49 @@ test("學生可低輸入留下學習證據，純任務模式只出現在學生�
   assert.match(app, /我弄懂了一個重點/);
   assert.match(app, /activeRole === "student"/);
   assert.match(styles, /\.learning-evidence-options/);
+});
+
+test("四類專家優化完整接上學生自我調節、教師支架與低刺激休息流程", async () => {
+  const [app, styles] = await Promise.all([
+    readProjectFile("src/app.js"),
+    readProjectFile("styles.css"),
+  ]);
+
+  for (const contract of [
+    "getDailyEnergy",
+    "recommendAcrossRealms",
+    "MICRO_GOALS",
+    "CHALLENGE_OPTIONS",
+    "PRE_STRATEGIES",
+    "STUCK_REASONS",
+    "NEXT_STEPS",
+    "getMissionLearningProfile",
+    "buildStudentDialogueCard",
+    "summarizeLearningCycle",
+    "buildLessonPlan",
+    "resolveLearningStory",
+    "getRevealMessage",
+    "共用裝置：結束這次學生工作階段",
+    "回到自學星圖",
+    "帶我去操作",
+  ]) {
+    assert.match(app, new RegExp(contract));
+  }
+  assert.match(styles, /\.rest-mode-screen/);
+  assert.match(styles, /@media print/);
+  assert.match(styles, /\.teacher-mode-controls/);
+});
+
+test("學生可收藏最多三個常用任務，休息模式收起任務、獎勵與進度浮層", async () => {
+  const app = await readProjectFile("src/app.js");
+
+  assert.match(app, /favoriteMissionIds/);
+  assert.match(app, /slice\(-3\)/);
+  assert.match(app, /我的常用任務（最多 3 個）/);
+  assert.match(app, /restMode:\s*true/);
+  assert.match(app, /現在只要休息/);
+  assert.match(
+    app,
+    /activeRole === "student" && !localState\.student\.gameplay\?\.restMode/,
+  );
 });

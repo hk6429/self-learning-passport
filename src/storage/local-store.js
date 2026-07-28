@@ -20,7 +20,12 @@ export function createDefaultState() {
       trackedBadgeId: null,
       missionStarts: [],
       gameplay: {
-        energyId: "quick",
+        energyId: null,
+        energyDateKey: null,
+        challengeId: "familiar",
+        microGoal: null,
+        preStrategy: null,
+        restMode: false,
         supportNeedId: "self",
         collectionExpanded: false,
       },
@@ -47,6 +52,8 @@ export function createDefaultState() {
       assignmentByMission: {},
       phaseByMission: {},
       closingPromptId: "method",
+      supportMode: "independent",
+      collaborationProtocol: "solo",
     },
     syncQueue: [],
   };

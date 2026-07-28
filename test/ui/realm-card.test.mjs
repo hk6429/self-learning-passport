@@ -95,7 +95,7 @@ test("安全建立含橫幅敘事圖、妖域資訊與三條航線的可讀卡�
   assert.equal(card.className, "realm-card");
   assert.equal(fake.innerHtmlWrites, 0);
 
-  const headings = findAll(card, ({ tagName }) => tagName === "h2");
+  const headings = findAll(card, ({ tagName }) => tagName === "h3");
   assert.equal(headings[0].textContent, model.name);
 
   const subject = findAll(

@@ -23,6 +23,8 @@ test("舊反思字串安全轉為結構化反思且預設不分享", () => {
     stuckReason: "",
     nextStep: "",
     note: "找到規律",
+    artifact: "",
+    exitTicket: "",
     shareWithParent: false,
   });
 });

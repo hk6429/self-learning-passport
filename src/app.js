@@ -39,13 +39,28 @@ import {
   SUPPORT_NEED_OPTIONS,
   buildLocalMetrics,
   buildMissionBrief,
-  getMissionRecommendation,
   getParentConversationPrompt,
   getRepeatReflection,
-  getStrategyCarryover,
   getTeacherLoadGuidance,
 } from "./domain/gamification-coach.js";
 import { appendMeasurement } from "./domain/local-measurement.js";
+import {
+  CHALLENGE_OPTIONS,
+  COLLABORATION_PROTOCOLS,
+  MICRO_GOALS,
+  NEXT_STEPS,
+  PRE_STRATEGIES,
+  STUCK_REASONS,
+  SUPPORT_MODES,
+  buildLessonPlan,
+  buildStudentDialogueCard,
+  getDailyEnergy,
+  getMissionLearningProfile,
+  getRevealMessage,
+  recommendAcrossRealms,
+  resolveLearningStory,
+  summarizeLearningCycle,
+} from "./domain/learning-experience.js";
 import {
   PRIVACY_LAYERS,
   analyzeTeacherPlan,
@@ -97,6 +112,10 @@ let teacherPhaseByMission = {
 };
 let teacherClosingPromptId =
   localState.teacher?.closingPromptId ?? CLOSING_PROMPTS[0].id;
+let teacherSupportMode =
+  localState.teacher?.supportMode ?? SUPPORT_MODES[1].id;
+let teacherCollaborationProtocol =
+  localState.teacher?.collaborationProtocol ?? COLLABORATION_PROTOCOLS[0].id;
 let sharedPlan = null;
 try {
   if (new URL(window.location.href).searchParams.has("missions")) {
@@ -225,6 +244,12 @@ function node(tagName, { className = "", text = "", attributes = {} } = {}) {
   return element;
 }
 
+function focusAfterRender(selector) {
+  window.requestAnimationFrame(() => {
+    document.querySelector(selector)?.focus({ preventScroll: true });
+  });
+}
+
 function saveLocalState() {
   const result = store.save(localState);
   if (!result.ok) {
@@ -260,6 +285,8 @@ function saveTeacherDraft() {
       assignmentByMission: { ...teacherAssignmentByMission },
       phaseByMission: { ...teacherPhaseByMission },
       closingPromptId: teacherClosingPromptId,
+      supportMode: teacherSupportMode,
+      collaborationProtocol: teacherCollaborationProtocol,
     },
   };
   saveLocalState();
@@ -406,6 +433,10 @@ function checkInMission(mission, status, additions = {}) {
         mission,
         status,
         occurredAt: new Date().toISOString(),
+        preStrategy:
+          additions.preStrategy ??
+          localState.student.gameplay?.preStrategy ??
+          null,
         ...additions,
       }),
       pendingReturn: null,
@@ -698,10 +729,27 @@ function createUserManualDialog(initialRole) {
 
   const doneButton = node("button", {
     className: "manual-done-button",
-    text: "看懂了，開始使用",
+    text: "帶我去操作",
     attributes: { type: "button" },
   });
-  doneButton.addEventListener("click", () => dialog.close());
+  doneButton.addEventListener("click", () => {
+    const role =
+      [...roleButtons].find(([, button]) =>
+        button.getAttribute("aria-pressed") === "true",
+      )?.[0] ?? initialRole;
+    const target = {
+      student: "#daily-mission-title",
+      teacher: "#realm-heading",
+      parent: "#parent-today-heading",
+    }[role];
+    dialog.close();
+    window.requestAnimationFrame(() => {
+      document.querySelector(target)?.scrollIntoView({
+        behavior: shouldReduceMotion() ? "auto" : "smooth",
+        block: "start",
+      });
+    });
+  });
   surface.append(top, switcher, contentMount, privacy, doneButton);
   dialog.append(surface);
   dialog.addEventListener("click", (event) => {
@@ -754,13 +802,59 @@ function createRolePanel(home, activeRole) {
       localState = { ...localState, activeRole: selection.activeRole };
       saveLocalState();
       render();
+      focusAfterRender(`.role-button[aria-pressed="true"]`);
     });
     switcher.append(button);
   }
 
   content.append(switcher);
+  if (activeRole === "student") {
+    content.append(createEndStudentSessionButton());
+  }
   panel.append(content);
   return panel;
+}
+
+function createSectionNavigation(activeRole) {
+  const items = {
+    student: [
+      ["#daily-mission-title", "今天任務"],
+      ["#passport-heading", "我的護照"],
+      ["#realm-heading", "選擇網站"],
+    ],
+    teacher: [
+      ["#realm-heading", "安排主域"],
+      ["#teacher-plan-heading", "班級航線"],
+      ["#teacher-platform-heading", "延伸平台"],
+    ],
+    parent: [
+      ["#parent-today-heading", "陪伴重點"],
+      ["#parent-platform-filter-heading", "快速選站"],
+      ["#parent-platform-heading", "平台清單"],
+    ],
+  }[activeRole] ?? [];
+  const navigation = node("nav", {
+    className: "section-navigation",
+    attributes: { "aria-label": "本頁重點導覽" },
+  });
+  for (const [href, label] of items) {
+    navigation.append(
+      node("a", {
+        text: label,
+        attributes: { href },
+      }),
+    );
+  }
+  navigation.append(
+    node("a", {
+      text: "⌂ 回到自學星圖",
+      attributes: {
+        href: "https://self-learning-orbit.pages.dev/",
+        "aria-label": "回到自學星圖總覽",
+      },
+    }),
+  );
+  return navigation;
 }
 
 function createWorldGuide() {
@@ -891,7 +985,9 @@ function createMissionLink(mission, { compact = false } = {}) {
       : `開始 ${mission.durationMinutes} 分鐘${mission.subject}任務`,
     attributes: {
       href: mission.url,
-      "aria-label": `開新分頁前往${mission.subject}任務：${mission.title}`,
+      "aria-label": compact
+        ? `開新分頁前往${mission.subject}任務：${mission.title}`
+        : `前往${mission.subject}任務：${mission.title}`,
     },
   });
   link.target = compact ? "_blank" : "_self";
@@ -940,42 +1036,66 @@ function createReturnPlayerHud(home, mission) {
     subjects.append(button);
   }
 
-  hud.append(copy, subjects, createMissionLink(mission, { compact: true }));
+  hud.append(
+    copy,
+    subjects,
+    node("span", {
+      className: "return-player-hud__scroll-hint",
+      text: "左右滑動可換網站 →",
+      attributes: { "aria-hidden": "true" },
+    }),
+    createMissionLink(mission, { compact: true }),
+  );
   return hud;
 }
 
 function createQuickStartPanel(home, mission) {
   const allMissions = home.realms.flatMap(({ routes }) => routes);
-  const sameRealmMissions = allMissions.filter(
-    ({ siteId }) => siteId === mission.siteId,
-  );
-  const weeklyStrategy = getStrategyCarryover(
-    localState.student.weeklyStrategyReviews ?? [],
-  );
-  const energyId = localState.student.gameplay?.energyId ?? "quick";
-  const recommendation = getMissionRecommendation({
-    missions: sameRealmMissions,
-    energyId,
+  const gameplay = localState.student.gameplay ?? {};
+  const energyId = getDailyEnergy(gameplay, getTodayKey()) ?? "quick";
+  const selectedEnergy =
+    ENERGY_OPTIONS.find(({ id }) => id === energyId) ?? ENERGY_OPTIONS[0];
+  const challengeId = gameplay.challengeId ?? CHALLENGE_OPTIONS[0].id;
+  const recommendation = recommendAcrossRealms({
+    missions: allMissions,
     northStar: localState.student.northStar,
-    weeklyStrategyId: weeklyStrategy?.strategyId ?? null,
+    minutes: selectedEnergy.durationMinutes,
+    challengeId,
+    lastSiteId: mission.siteId,
+    questionMissionId: getAllMissionReports()
+      .filter(({ evidenceId }) => evidenceId === "question")
+      .at(-1)?.missionId,
   });
-  const section = node("section", {
+  const microGoals =
+    MICRO_GOALS[localState.student.northStar] ?? MICRO_GOALS.habit;
+  const section = node("details", {
     className: "quick-start-panel",
     attributes: { "aria-labelledby": "quick-start-heading" },
   });
-  section.append(
-    node("p", { className: "eyebrow", text: "今天的心力・建議不是規定" }),
-    node("h2", {
+  section.open = !hasStudentHistory();
+  const summary = node("summary", { className: "quick-start-summary" });
+  summary.append(
+    node("strong", {
       text: "今天想怎麼開始？",
       attributes: { id: "quick-start-heading" },
     }),
+    node("span", {
+      text: section.open ? "依心力選 5、10 或 15 分鐘" : "想換節奏時再展開",
+    }),
+  );
+  section.append(
+    summary,
+    node("p", { className: "eyebrow", text: "今天的心力・建議不是規定" }),
     node("p", {
       className: "recommendation-reason",
-      text: recommendation.reason,
+      text:
+        localState.student.northStar === "find-my-way"
+          ? "你的北極星是探索方法，推薦會主動跨到不同領域。"
+          : "推薦會依今天時間、挑戰程度與北極星調整。",
     }),
     node("p", {
       className: "recommendation-outcome",
-      text: `今天會練到：${getMissionLearningOutcome(recommendation.mission)}`,
+      text: `今天會練到：${getMissionLearningOutcome(recommendation)}`,
     }),
   );
   const doors = node("div", {
@@ -984,7 +1104,7 @@ function createQuickStartPanel(home, mission) {
   });
   for (const option of ENERGY_OPTIONS) {
     const optionMission =
-      sameRealmMissions.find(
+      allMissions.find(
         ({ durationMinutes }) =>
           durationMinutes === option.durationMinutes,
       ) ?? mission;
@@ -1004,6 +1124,7 @@ function createQuickStartPanel(home, mission) {
           gameplay: {
             ...(localState.student.gameplay ?? {}),
             energyId: option.id,
+            energyDateKey: getTodayKey(),
           },
         },
       };
@@ -1014,17 +1135,140 @@ function createQuickStartPanel(home, mission) {
     });
     doors.append(button);
   }
+  const challengeChoices = node("div", {
+    className: "quick-start-doors",
+    attributes: { role: "group", "aria-label": "選擇今天的挑戰程度" },
+  });
+  for (const option of CHALLENGE_OPTIONS) {
+    const button = node("button", {
+      text: option.label,
+      attributes: {
+        type: "button",
+        title: option.guidance,
+        "aria-pressed": String(challengeId === option.id),
+      },
+    });
+    button.addEventListener("click", () => {
+      localState = {
+        ...localState,
+        student: {
+          ...localState.student,
+          gameplay: {
+            ...(localState.student.gameplay ?? {}),
+            challengeId: option.id,
+          },
+        },
+      };
+      saveLocalState();
+      render();
+      document.querySelector(".quick-start-summary")?.focus();
+    });
+    challengeChoices.append(button);
+  }
+  const goalChoices = node("div", {
+    className: "quick-start-doors",
+    attributes: { role: "group", "aria-label": "選擇短期微目標" },
+  });
+  for (const goal of microGoals) {
+    const button = node("button", {
+      text: goal,
+      attributes: {
+        type: "button",
+        "aria-pressed": String(gameplay.microGoal === goal),
+      },
+    });
+    button.addEventListener("click", () => {
+      localState = {
+        ...localState,
+        student: {
+          ...localState.student,
+          gameplay: {
+            ...(localState.student.gameplay ?? {}),
+            microGoal: goal,
+          },
+        },
+      };
+      saveLocalState();
+      render();
+    });
+    goalChoices.append(button);
+  }
+  const strategyChoices = node("div", {
+    className: "quick-start-doors",
+    attributes: { role: "group", "aria-label": "開始前先選一個策略" },
+  });
+  for (const strategy of PRE_STRATEGIES) {
+    const button = node("button", {
+      text: strategy.label,
+      attributes: {
+        type: "button",
+        "aria-pressed": String(gameplay.preStrategy === strategy.id),
+      },
+    });
+    button.addEventListener("click", () => {
+      localState = {
+        ...localState,
+        student: {
+          ...localState.student,
+          gameplay: {
+            ...(localState.student.gameplay ?? {}),
+            preStrategy: strategy.id,
+          },
+        },
+      };
+      appendLocalEvent("strategy_selected");
+      saveLocalState();
+      render();
+    });
+    strategyChoices.append(button);
+  }
+  const favoriteMissions = (localState.student.favoriteMissionIds ?? [])
+    .map((id) => missionById.get(id))
+    .filter(Boolean)
+    .slice(0, 3);
+  const favoriteChoices = node("div", {
+    className: "quick-start-favorites",
+    attributes: { role: "group", "aria-label": "最多三個常用任務" },
+  });
+  for (const favoriteMission of favoriteMissions) {
+    const button = node("button", {
+      text: `★ ${favoriteMission.title}`,
+      attributes: { type: "button" },
+    });
+    button.addEventListener("click", () => {
+      selectedMissionId = favoriteMission.id;
+      render();
+      focusAfterRender("#daily-mission-title");
+    });
+    favoriteChoices.append(button);
+  }
   const suggested = node("button", {
     className: "quick-start-recommendation",
-    text: `採用推薦：${recommendation.mission.title}`,
+    text: `採用推薦：${recommendation.title}`,
     attributes: { type: "button" },
   });
   suggested.addEventListener("click", () => {
-    selectedMissionId = recommendation.mission.id;
+    selectedMissionId = recommendation.id;
     render();
     document.querySelector("#daily-mission-title")?.focus();
   });
-  section.append(doors, suggested);
+  section.append(
+    node("strong", { text: "今天可用時間" }),
+    doors,
+    node("strong", { text: "想要的挑戰程度" }),
+    challengeChoices,
+    node("strong", { text: "這一小段想完成什麼" }),
+    goalChoices,
+    node("strong", { text: "開始前先選一個方法" }),
+    strategyChoices,
+    ...(favoriteMissions.length
+      ? [
+          node("strong", { text: "我的常用任務（最多 3 個）" }),
+          favoriteChoices,
+        ]
+      : []),
+    suggested,
+  );
   return section;
 }
 
@@ -1122,6 +1366,17 @@ function createHealthyRestCard() {
         missionId: pendingReturnMissionId,
         outcome,
       });
+      localState = {
+        ...localState,
+        student: {
+          ...localState.student,
+          gameplay: {
+            ...(localState.student.gameplay ?? {}),
+            restMode: true,
+          },
+        },
+      };
+      saveLocalState();
     }
     restSuggestion = null;
     render();
@@ -1131,6 +1386,49 @@ function createHealthyRestCard() {
   actions.append(rest, continueButton);
   card.append(actions);
   return card;
+}
+
+function createRestModeScreen() {
+  const section = node("section", {
+    className: "rest-mode-screen",
+    attributes: { "aria-labelledby": "rest-mode-heading" },
+  });
+  section.append(
+    node("h1", {
+      text: "現在只要休息",
+      attributes: { id: "rest-mode-heading" },
+    }),
+    node("p", {
+      text: "畫面已收起進度、獎勵與任務。喝水、看遠方或閉眼一下；你走過的路都還在。",
+    }),
+  );
+  const resume = node("button", {
+    text: "我準備好，再回到護照",
+    attributes: { type: "button" },
+  });
+  resume.addEventListener("click", () => {
+    localState = {
+      ...localState,
+      student: {
+        ...localState.student,
+        gameplay: {
+          ...(localState.student.gameplay ?? {}),
+          restMode: false,
+        },
+      },
+    };
+    saveLocalState();
+    render();
+    focusAfterRender("#daily-mission-title");
+  });
+  section.append(
+    resume,
+    node("a", {
+      text: "回到自學星圖",
+      attributes: { href: "https://self-learning-orbit.pages.dev/" },
+    }),
+  );
+  return section;
 }
 
 function createLearningPathPanel() {
@@ -1149,15 +1447,22 @@ function createLearningPathPanel() {
     restDays,
     new Date(),
   );
-  const section = node("section", {
+  const section = node("details", {
     className: "learning-path-panel",
     attributes: { id: "learning-path", "aria-labelledby": "learning-path-heading" },
   });
-  section.append(
-    node("h2", {
+  const summary = node("summary", { className: "learning-path-summary" });
+  summary.append(
+    node("strong", {
       text: `七燈書・第 ${sevenLights.currentBook} 冊`,
       attributes: { id: "learning-path-heading" },
     }),
+    node("span", {
+      text: `${sevenLights.litCount}／7 盞・已完成 ${sevenLights.completedBooks} 冊`,
+    }),
+  );
+  section.append(
+    summary,
     node("p", {
       text: `每 7 個投入日永久完成一冊，目前已完成 ${sevenLights.completedBooks} 冊；不必連續，休息也會留下節奏記號。下方保留最近 14 天供自己回望。`,
     }),
@@ -1207,15 +1512,33 @@ function createMissionLearningBrief(mission) {
     mission,
     learningOutcome: getMissionLearningOutcome(mission),
   });
+  const profile = getMissionLearningProfile(mission);
   const section = node("section", {
     className: "mission-learning-brief",
     attributes: { "aria-label": "任務學習目標與完成方式" },
   });
+  const currentStage = {
+    light: "看懂範例",
+    standard: "自己練習",
+    challenge: "延伸遷移",
+  }[mission.routeLevel] ?? "自己練習";
   section.append(
-    node("strong", { text: "今天會練到什麼" }),
-    node("p", { text: brief.learningOutcome }),
-    node("strong", { text: "做到什麼算完成" }),
-    node("p", { text: brief.doneDefinition }),
+    node("p", {
+      className: "mission-stage",
+      text: `任務階段：看懂範例 → 自己練習 → 延伸遷移｜目前：${currentStage}`,
+    }),
+    node("strong", { text: "今天的學習意圖" }),
+    node("p", { text: profile.intent }),
+    node("strong", { text: "我怎麼知道自己做到了" }),
+  );
+  const criteria = node("ul", { className: "mission-success-criteria" });
+  for (const item of profile.successCriteria) {
+    criteria.append(node("li", { text: item }));
+  }
+  const offline = node("details", { className: "offline-fallback" });
+  offline.append(
+    node("summary", { text: "網路不穩也能完成" }),
+    node("p", { text: profile.offlineFallback }),
   );
   const reward = node("details", { className: "mission-reward-details" });
   reward.append(
@@ -1224,7 +1547,7 @@ function createMissionLearningBrief(mission) {
       text: `${brief.rewardNote} 這次完整或部分完成的基礎值皆為 ${getMissionReward(mission)} 習光；同日投入超過 30 分鐘後會減半，60 分鐘後停止增加，足跡仍會完整保留。`,
     }),
   );
-  section.append(reward);
+  section.append(criteria, offline, reward);
   return section;
 }
 
@@ -1291,10 +1614,33 @@ function createStudentHero(home, mission, focusMode) {
       rel: "noopener noreferrer",
     },
   });
+  const favorites = localState.student.favoriteMissionIds ?? [];
+  const favorite = node("button", {
+    className: "favorite-mission-button",
+    text: favorites.includes(mission.id) ? "★ 已加入常用任務" : "☆ 加入常用任務",
+    attributes: {
+      type: "button",
+      "aria-pressed": String(favorites.includes(mission.id)),
+    },
+  });
+  favorite.addEventListener("click", () => {
+    const exists = favorites.includes(mission.id);
+    const next = exists
+      ? favorites.filter((id) => id !== mission.id)
+      : [...favorites, mission.id].slice(-3);
+    localState = {
+      ...localState,
+      student: { ...localState.student, favoriteMissionIds: next },
+    };
+    saveLocalState();
+    render();
+    document.querySelector(".favorite-mission-button")?.focus();
+  });
   newTab.addEventListener("click", () => markMissionLaunched(mission.id));
   scroll.append(
     createMissionLink(mission),
     newTab,
+    favorite,
     node("p", {
       className: "mission-note",
       text: "主按鈕會在同分頁開啟，可用瀏覽器返回鍵回到護照；系統不讀取外站成績。",
@@ -1354,7 +1700,7 @@ function createCheckInFeedback(mission, report, guideCelebration) {
           item.missionId === mission.id &&
           item.occurredAt === report.occurredAt,
       )?.earnedXp ?? 0;
-    const mystery = getLatestMystery(localState.student);
+    const story = resolveLearningStory({ mission, trigger: report.status });
     const rewards = node("div", { className: "checkin-rewards" });
     rewards.append(
       node("span", {
@@ -1369,7 +1715,7 @@ function createCheckInFeedback(mission, report, guideCelebration) {
       rewards,
       node("p", {
         className: "checkin-mystery",
-        text: mystery?.message ?? "霧海記住了你今天走過的路。",
+        text: `${story.join(" ")} ${getRevealMessage(mission)}`,
       }),
       node("details", {
         className: "checkin-next-target",
@@ -1483,6 +1829,12 @@ function createMissionReturnPanel(mission, guideCelebration) {
 
   if (report && report.status !== "rest") {
     const structured = normalizeReflection(report.reflection);
+    const updateReflection = (nextReflection, next = {}) =>
+      checkInMission(mission, report.status, {
+        strategy: next.strategy ?? report.strategy ?? null,
+        evidenceId: next.evidenceId ?? report.evidenceId ?? null,
+        reflection: nextReflection,
+      });
     const optional = node("details", { className: "optional-followup" });
     optional.append(
       node("summary", { text: "有力氣再補（選填）" }),
@@ -1514,7 +1866,64 @@ function createMissionReturnPanel(mission, guideCelebration) {
       evidenceOptions.append(button);
     }
     optional.append(evidenceOptions);
+    const profile = getMissionLearningProfile(mission);
+    const exitTicket = node("fieldset", { className: "exit-ticket" });
+    exitTicket.append(
+      node("legend", { text: "離站小卡：哪一句最接近現在的你？" }),
+      node("p", { text: profile.exitTicket.prompt }),
+    );
+    for (const label of profile.exitTicket.options) {
+      const button = node("button", {
+        text: label,
+        attributes: {
+          type: "button",
+          "aria-pressed": String(structured.exitTicket === label),
+        },
+      });
+      button.addEventListener("click", () =>
+        updateReflection({ ...structured, exitTicket: label }),
+      );
+      exitTicket.append(button);
+    }
+    optional.append(exitTicket);
     if (report.status === "partial") {
+      const stuck = node("div", {
+        className: "reflection-choice-group",
+        attributes: { role: "group", "aria-label": "這次卡住的原因" },
+      });
+      stuck.append(node("span", { text: "我卡在：" }));
+      for (const option of STUCK_REASONS) {
+        const button = node("button", {
+          text: option.label,
+          attributes: {
+            type: "button",
+            "aria-pressed": String(structured.stuckReason === option.label),
+          },
+        });
+        button.addEventListener("click", () =>
+          updateReflection({ ...structured, stuckReason: option.label }),
+        );
+        stuck.append(button);
+      }
+      const nextSteps = node("div", {
+        className: "reflection-choice-group",
+        attributes: { role: "group", "aria-label": "下一步選擇" },
+      });
+      nextSteps.append(node("span", { text: "下一步：" }));
+      for (const option of NEXT_STEPS) {
+        const button = node("button", {
+          text: option.label,
+          attributes: {
+            type: "button",
+            "aria-pressed": String(structured.nextStep === option.label),
+          },
+        });
+        button.addEventListener("click", () =>
+          updateReflection({ ...structured, nextStep: option.label }),
+        );
+        nextSteps.append(button);
+      }
+      optional.append(stuck, nextSteps);
       const strategy = node("div", { className: "strategy-lab" });
       strategy.append(
         node("span", { text: "下次換個走法：" }),
@@ -1539,12 +1948,17 @@ function createMissionReturnPanel(mission, guideCelebration) {
       }
       optional.append(strategy);
     }
-    const reflection = node("label", { className: "reflection-field" });
+    const reflectionId = `reflection-${mission.id}`;
+    const reflection = node("div", { className: "reflection-field" });
     reflection.append(
-      node("span", { text: mission.completionPrompt }),
+      node("label", {
+        text: mission.completionPrompt,
+        attributes: { for: reflectionId },
+      }),
     );
     const input = node("input", {
       attributes: {
+        id: reflectionId,
         type: "text",
         maxlength: "120",
         placeholder: "可留白，只記在這台裝置",
@@ -1564,6 +1978,35 @@ function createMissionReturnPanel(mission, guideCelebration) {
       }),
     );
     reflection.append(input, save);
+    const artifactId = `artifact-${mission.id}`;
+    const artifact = node("div", { className: "reflection-field" });
+    artifact.append(
+      node("label", {
+        text: "作品證據（題號、筆記頁、作品名稱，可留白）",
+        attributes: { for: artifactId },
+      }),
+    );
+    const artifactInput = node("input", {
+      attributes: {
+        id: artifactId,
+        type: "text",
+        maxlength: "80",
+        placeholder: "例如：習作第 12 題",
+        value: structured.artifact ?? "",
+      },
+    });
+    artifactInput.value = structured.artifact ?? "";
+    const saveArtifact = node("button", {
+      text: "保存作品證據",
+      attributes: { type: "button" },
+    });
+    saveArtifact.addEventListener("click", () =>
+      updateReflection({
+        ...structured,
+        artifact: artifactInput.value.trim(),
+      }),
+    );
+    artifact.append(artifactInput, saveArtifact);
     const share = node("label", { className: "reflection-share" });
     const checkbox = node("input", {
       attributes: {
@@ -1583,8 +2026,37 @@ function createMissionReturnPanel(mission, guideCelebration) {
       }),
     );
     share.append(checkbox, node("span", { text: "願意讓家長看見這則發現" }));
-    optional.append(reflection);
+    optional.append(reflection, artifact);
     optional.append(share);
+    const dialogue = buildStudentDialogueCard(report);
+    const dialogueCard = node("aside", { className: "student-dialogue-card" });
+    dialogueCard.append(
+      node("strong", { text: "由我決定要不要分享的對話卡" }),
+      node("p", {
+        text:
+          dialogue.safeText ||
+          "先留下成功、疑問或下一步，這裡會整理成一張不含姓名的分享卡。",
+      }),
+    );
+    const dialogueStatus = node("p", {
+      attributes: { "aria-live": "polite" },
+    });
+    const copyDialogue = node("button", {
+      className: "student-dialogue-card__copy",
+      text: "複製這三項，不含自由筆記",
+      attributes: { type: "button", disabled: dialogue.safeText ? null : "" },
+    });
+    copyDialogue.disabled = !dialogue.safeText;
+    copyDialogue.addEventListener("click", async () => {
+      try {
+        await navigator.clipboard.writeText(dialogue.safeText);
+        dialogueStatus.textContent = "已複製；是否分享由你決定。";
+      } catch {
+        dialogueStatus.textContent = "無法自動複製，可直接選取上方文字。";
+      }
+    });
+    dialogueCard.append(copyDialogue, dialogueStatus);
+    optional.append(dialogueCard);
     panel.append(optional);
   }
 
@@ -1615,6 +2087,26 @@ function createWeeklyStrategyReview() {
     }),
     node("p", {
       text: "不是考試，也不判斷成績；選一個最接近的答案，幫下一段路更好開始。",
+    }),
+  );
+  const cycle = summarizeLearningCycle(getAllMissionReports());
+  const evidenceSummary = node("ul", {
+    className: "weekly-evidence-summary",
+    attributes: { "aria-label": "最近七次學習證據摘要" },
+  });
+  for (const text of [
+    `最近 ${cycle.count} 次落印`,
+    `${cycle.fiveMinuteCount} 次用 5 分鐘開始`,
+    `探索 ${cycle.subjects} 個領域`,
+    `留下 ${cycle.questions} 個疑問`,
+    `${cycle.strategies} 次有先選或調整策略`,
+  ]) {
+    evidenceSummary.append(node("li", { text }));
+  }
+  section.append(
+    evidenceSummary,
+    node("p", {
+      text: "想一想：這個方法在哪一科、什麼心力或哪種任務最有用？方法沒有永遠最好，只有是否適合當下。",
     }),
   );
 
@@ -2319,9 +2811,9 @@ function createPrivacyCenter(activeRole) {
   }
   const layers = node("div", { className: "privacy-layers" });
   for (const layer of PRIVACY_LAYERS) {
-    const item = node("article");
+    const item = node("details");
     item.append(
-      node("strong", { text: layer.title }),
+      node("summary", { text: layer.title }),
       node("p", { text: layer.copy }),
     );
     layers.append(item);
@@ -2374,11 +2866,13 @@ function createPrivacyCenter(activeRole) {
     },
   });
   const clear = node("button", {
+    className: "privacy-clear-all",
     text: "清除這台裝置的護照資料（全部）",
     attributes: { type: "button" },
   });
   const defaults = createDefaultState();
   const clearStudent = node("button", {
+    className: "privacy-clear-partial",
     text: "只清除學生護照與反思",
     attributes: { type: "button" },
   });
@@ -2389,6 +2883,7 @@ function createPrivacyCenter(activeRole) {
     render();
   });
   const clearTeacher = node("button", {
+    className: "privacy-clear-partial",
     text: "只清除教師航線草稿",
     attributes: { type: "button" },
   });
@@ -2422,7 +2917,17 @@ function createPrivacyCenter(activeRole) {
     if (result.status === "cleared") render();
   });
   actions.append(issues, clearStudent, clearTeacher, clear);
-  section.append(facts, layers, localMetrics, sources, actions, status);
+  const disclosure = node("details", { className: "privacy-disclosure" });
+  disclosure.append(
+    node("summary", { text: "查看資料保存、外站來源與清除設定" }),
+    facts,
+    layers,
+    localMetrics,
+    sources,
+    actions,
+    status,
+  );
+  section.append(disclosure);
   return section;
 }
 
@@ -2503,7 +3008,49 @@ function createTeacherPlanStudio() {
     render();
   });
   budgetField.append(budgetSelect);
-  section.append(budgetField);
+  const teachingModes = node("div", { className: "teacher-mode-controls" });
+  const supportField = node("label");
+  supportField.append(node("span", { text: "差異化支持" }));
+  const supportSelect = node("select", {
+    attributes: { "aria-label": "差異化支持方式" },
+  });
+  for (const option of SUPPORT_MODES) {
+    supportSelect.append(
+      node("option", {
+        text: option.label,
+        attributes: { value: option.id },
+      }),
+    );
+  }
+  supportSelect.value = teacherSupportMode;
+  supportSelect.addEventListener("change", () => {
+    teacherSupportMode = supportSelect.value;
+    saveTeacherDraft();
+    render();
+  });
+  supportField.append(supportSelect);
+  const protocolField = node("label");
+  protocolField.append(node("span", { text: "合作流程" }));
+  const protocolSelect = node("select", {
+    attributes: { "aria-label": "合作學習流程" },
+  });
+  for (const option of COLLABORATION_PROTOCOLS) {
+    protocolSelect.append(
+      node("option", {
+        text: option.label,
+        attributes: { value: option.id },
+      }),
+    );
+  }
+  protocolSelect.value = teacherCollaborationProtocol;
+  protocolSelect.addEventListener("change", () => {
+    teacherCollaborationProtocol = protocolSelect.value;
+    saveTeacherDraft();
+    render();
+  });
+  protocolField.append(protocolSelect);
+  teachingModes.append(supportField, protocolField);
+  section.append(budgetField, teachingModes);
   if (missions.length === 0) return section;
 
   const list = node("ol", { className: "teacher-plan-list" });
@@ -2633,6 +3180,46 @@ function createTeacherPlanStudio() {
     questions.append(node("li", { text: question }));
   }
   facilitationCard.append(questions);
+  const lessonPlan = buildLessonPlan({
+    missions,
+    supportMode: teacherSupportMode,
+    protocol: teacherCollaborationProtocol,
+  });
+  const lessonPlanCard = node("details", {
+    className: "teacher-lesson-plan",
+  });
+  lessonPlanCard.append(
+    node("summary", { text: "一頁教案與離線備案" }),
+    node("p", {
+      text: `${lessonPlan.totalMinutes} 分鐘・${lessonPlan.supportLabel}・${lessonPlan.protocolLabel}`,
+    }),
+  );
+  const lessonPrompts = node("ol");
+  for (const prompt of lessonPlan.prompts) {
+    lessonPrompts.append(node("li", { text: prompt }));
+  }
+  lessonPlanCard.append(lessonPrompts);
+  for (const item of lessonPlan.missions) {
+    const missionPlan = node("article", { className: "teacher-lesson-mission" });
+    missionPlan.append(
+      node("strong", { text: item.title }),
+      node("p", { text: `學習意圖：${item.intent}` }),
+      node("p", {
+        text: `成功規準：${item.successCriteria.join("；")}`,
+      }),
+      node("p", { text: `離線備案：${item.offlineFallback}` }),
+    );
+    lessonPlanCard.append(missionPlan);
+  }
+  const printPlan = node("button", {
+    text: "列印一頁教案",
+    attributes: { type: "button" },
+  });
+  printPlan.addEventListener("click", () => {
+    lessonPlanCard.open = true;
+    window.print();
+  });
+  lessonPlanCard.append(printPlan);
   const closingField = node("label", { className: "teacher-closing-prompt" });
   closingField.append(node("span", { text: "全班共同收束問題" }));
   const closingSelect = node("select", {
@@ -2724,6 +3311,7 @@ function createTeacherPlanStudio() {
     loadNotice,
     closingField,
     facilitationCard,
+    lessonPlanCard,
     shareArea,
   );
   return section;
@@ -2967,25 +3555,31 @@ function createPlatformFilterPanel(activeRole) {
     allPlatforms,
     filters,
   );
-  const section = node("section", {
+  const section = node("details", {
     className: "platform-filter-panel",
     attributes: { "aria-labelledby": `${activeRole}-platform-filter-heading` },
   });
-  section.append(
-    node("div", { className: "platform-filter-panel__copy" }),
+  const summary = node("summary", {
+    className: "platform-filter-summary",
+  });
+  summary.append(
+    node("strong", {
+      text:
+        activeRole === "teacher"
+          ? "依課堂情境篩選平台"
+          : "依領域、時間與陪伴方式選站",
+      attributes: { id: `${activeRole}-platform-filter-heading` },
+    }),
+    node("span", {
+      text: `目前顯示 ${visiblePlatforms.length}／${allPlatforms.length} 個平台`,
+    }),
   );
-  const copy = section.firstElementChild;
+  const copy = node("div", { className: "platform-filter-panel__copy" });
+  section.append(summary, copy);
   copy.append(
     node("p", {
       className: "eyebrow",
       text: activeRole === "teacher" ? "教學選站器" : "親子選站器",
-    }),
-    node("h2", {
-      text:
-        activeRole === "teacher"
-          ? "依課堂情境找到合適平台"
-          : "依領域、時間與陪伴方式快速選站",
-      attributes: { id: `${activeRole}-platform-filter-heading` },
     }),
     node("p", {
       text:
@@ -3025,12 +3619,7 @@ function createPlatformFilterPanel(activeRole) {
         },
       };
       render();
-      document
-        .querySelector(`#${activeRole}-platform-filter-heading`)
-        ?.scrollIntoView({
-        behavior: shouldReduceMotion() ? "auto" : "smooth",
-        block: "start",
-      });
+      focusAfterRender(`select[aria-label="${label}"]`);
     });
     field.append(select);
     controls.append(field);
@@ -3338,8 +3927,7 @@ function syncProgressDockSafety() {
   });
 
   if (collision) {
-    dock.dataset.safe = "hidden";
-    toggle.setAttribute("tabindex", "-1");
+    dock.dataset.safe = "shifted";
   }
 }
 
@@ -3431,6 +4019,31 @@ function createHeader(onOpenManual, activeRole) {
   return header;
 }
 
+function createEndStudentSessionButton() {
+  const endSession = node("button", {
+    className: "session-end-button",
+    text: "共用裝置：結束這次學生工作階段",
+    attributes: {
+      type: "button",
+      title: "只清除學生護照與反思，保留教師航線",
+    },
+  });
+  endSession.addEventListener("click", () => {
+    if (!window.confirm("確定結束這次學生工作階段並清除學生護照與反思嗎？")) {
+      return;
+    }
+    localState = {
+      ...localState,
+      activeRole: null,
+      student: createDefaultState().student,
+    };
+    selectedMissionId = null;
+    saveLocalState();
+    render();
+  });
+  return endSession;
+}
+
 function render() {
   const home = buildHomeState({
     state: localState,
@@ -3462,14 +4075,24 @@ function render() {
     }),
     createHeader(() => manualDialog.showModal(), activeRole),
     createRolePanel(home, activeRole),
+    createSectionNavigation(activeRole),
   );
   const storageStatus = createStorageNotice();
   if (storageStatus) shell.append(storageStatus);
   const main = node("main", { attributes: { id: "main-content" } });
   const sharedPlanSection = createSharedPlanSection();
-  if (sharedPlanSection) main.append(sharedPlanSection);
+  if (
+    sharedPlanSection &&
+    !(activeRole === "student" && localState.student.gameplay?.restMode)
+  ) {
+    main.append(sharedPlanSection);
+  }
 
   if (activeRole === "student") {
+    if (localState.student.gameplay?.restMode) {
+      main.append(createRestModeScreen());
+      shell.classList.add("rest-mode");
+    } else {
     if (
       hasStudentHistory() &&
       !localState.student.visualPreference.focusMode
@@ -3496,15 +4119,16 @@ function render() {
       createRealmSection(home, activeRole),
       createPlatformSection(activeRole),
     );
+    }
   } else {
     main.append(createRoleNotice(activeRole));
     if (activeRole === "teacher") {
       main.append(
         createPlatformFilterPanel("teacher"),
-        createTeacherPlanStudio(),
         createRealmSection(home, activeRole, {
           filters: platformFiltersByRole.teacher,
         }),
+        createTeacherPlanStudio(),
         createSupportStudio(activeRole),
         createPlatformSection(activeRole, {
           filters: platformFiltersByRole.teacher,
@@ -3525,9 +4149,14 @@ function render() {
       );
     }
   }
-  shell.append(main, manualDialog, createProgressDock());
+  shell.append(main, manualDialog);
+  if (activeRole === "student" && !localState.student.gameplay?.restMode) {
+    shell.append(createProgressDock());
+  }
   app.replaceChildren(shell);
-  scheduleProgressDockSafety();
+  if (activeRole === "student" && !localState.student.gameplay?.restMode) {
+    scheduleProgressDockSafety();
+  }
 }
 
 window.addEventListener("focus", () => {
@@ -3545,5 +4174,35 @@ window.addEventListener("scroll", scheduleProgressDockSafety, {
   passive: true,
 });
 window.addEventListener("resize", scheduleProgressDockSafety);
+document.addEventListener("keydown", (event) => {
+  if (event.key !== "Escape") return;
+  const dock = document.querySelector(".progress-dock");
+  const toggle = dock?.querySelector(".progress-dock__toggle");
+  if (!dock || dock.dataset.expanded !== "true") return;
+  dock.dataset.expanded = "false";
+  toggle?.setAttribute("aria-expanded", "false");
+  toggle?.focus();
+  scheduleProgressDockSafety();
+});
 
-render();
+try {
+  render();
+} catch (error) {
+  console.error("萬妖習行錄首頁無法完成渲染。", error);
+  const fallback = node("main", {
+    className: "fatal-render-fallback",
+    attributes: { id: "main-content" },
+  });
+  fallback.append(
+    node("h1", { text: "頁面暫時無法開啟" }),
+    node("p", { text: "請重新整理；若仍無法使用，可回到自學星圖改走其他入口。" }),
+    node("a", {
+      text: "回到自學星圖",
+      attributes: { href: "https://self-learning-orbit.pages.dev/" },
+    }),
+  );
+  if (new URL(window.location.href).searchParams.has("qa")) {
+    fallback.append(node("code", { text: String(error?.message ?? error) }));
+  }
+  app.replaceChildren(fallback);
+}

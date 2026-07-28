@@ -44,6 +44,8 @@ test("以注入的 storage adapter 正常保存與載入 schema v1", () => {
     assignmentByMission: {},
     phaseByMission: {},
     closingPromptId: "method",
+    supportMode: "independent",
+    collaborationProtocol: "solo",
   });
   assert.deepEqual(defaultState.syncQueue, []);
 

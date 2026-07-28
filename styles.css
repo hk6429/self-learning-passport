@@ -1,7 +1,10 @@
 :root {
   color-scheme: dark;
-  font-family:
-    "Noto Sans TC", "PingFang TC", "Microsoft JhengHei", system-ui, sans-serif;
+  --font-sans:
+    "PingFang TC", "Microsoft JhengHei", "Heiti TC", system-ui, sans-serif;
+  --font-serif:
+    "Songti TC", "PMingLiU", "Apple LiSung", ui-serif, serif;
+  font-family: var(--font-sans);
   font-synthesis: none;
   --ink: #15152b;
   --ink-soft: #24213f;
@@ -17,6 +20,11 @@
   --purple: #8d6ccb;
   --line: rgba(255, 248, 232, 0.16);
   --shadow: 0 24px 70px rgba(4, 4, 18, 0.34);
+  --surface-paper: #fff8e8;
+  --surface-paper-strong: #fffdf5;
+  --text-on-paper: #2a251c;
+  --action-primary: #263b31;
+  --action-primary-text: #fff8df;
 }
 
 *,
@@ -54,7 +62,10 @@ button {
 }
 
 button:focus-visible,
-a:focus-visible {
+a:focus-visible,
+summary:focus-visible,
+input:focus-visible,
+select:focus-visible {
   outline: 3px solid var(--gold);
   outline-offset: 4px;
 }
@@ -129,7 +140,7 @@ img {
   color: var(--gold);
   background: rgba(21, 21, 43, 0.72);
   box-shadow: inset 0 0 0 3px rgba(243, 183, 67, 0.08);
-  font-family: ui-serif, "Noto Serif TC", serif;
+  font-family: var(--font-serif);
   font-size: 1.15rem;
   font-weight: 800;
 }
@@ -221,7 +232,7 @@ img {
 
 .manual-dialog h2 {
   margin: 0;
-  font-family: ui-serif, "Noto Serif TC", serif;
+  font-family: var(--font-serif);
   font-size: clamp(1.65rem, 4vw, 2.6rem);
 }
 
@@ -295,7 +306,7 @@ img {
 
 .manual-role-heading h3 {
   margin: 12px 0 8px;
-  font-family: ui-serif, "Noto Serif TC", serif;
+  font-family: var(--font-serif);
   font-size: clamp(1.3rem, 3vw, 1.85rem);
   line-height: 1.35;
 }
@@ -430,6 +441,48 @@ img {
   margin-top: 13px;
 }
 
+.section-navigation {
+  position: sticky;
+  z-index: 8;
+  top: max(8px, env(safe-area-inset-top));
+  display: flex;
+  gap: 8px;
+  width: fit-content;
+  max-width: 100%;
+  margin: 10px auto 18px;
+  padding: 6px;
+  overflow-x: auto;
+  border: 1px solid var(--line);
+  border-radius: 16px;
+  background: rgba(21, 21, 43, 0.9);
+  box-shadow: 0 12px 28px rgba(4, 4, 18, 0.24);
+  backdrop-filter: blur(18px);
+  scrollbar-width: none;
+}
+
+.section-navigation::-webkit-scrollbar {
+  display: none;
+}
+
+.section-navigation a {
+  display: inline-flex;
+  min-height: 44px;
+  flex: 0 0 auto;
+  align-items: center;
+  justify-content: center;
+  padding: 8px 14px;
+  border-radius: 11px;
+  color: var(--paper);
+  font-size: 0.84rem;
+  font-weight: 800;
+  text-decoration: none;
+}
+
+.section-navigation a:hover {
+  color: #31230b;
+  background: var(--gold);
+}
+
 .role-intro {
   margin: 0;
   color: var(--muted);
@@ -499,7 +552,7 @@ img {
 
 .return-player-hud__copy h2 {
   margin: 2px 0 3px;
-  font-family: ui-serif, "Noto Serif TC", serif;
+  font-family: var(--font-serif);
   font-size: clamp(1.35rem, 2.4vw, 2rem);
 }
 
@@ -538,6 +591,13 @@ img {
   border-color: rgba(243, 183, 67, 0.65);
   color: var(--paper);
   background: rgba(243, 183, 67, 0.16);
+}
+
+.return-player-hud__scroll-hint {
+  display: none;
+  color: var(--muted);
+  font-size: 0.75rem;
+  font-weight: 800;
 }
 
 .return-player-hud__cta {
@@ -639,7 +699,7 @@ img {
 .hero h1 {
   max-width: 11ch;
   margin: 0;
-  font-family: ui-serif, "Noto Serif TC", serif;
+  font-family: var(--font-serif);
   font-size: clamp(2.5rem, 4.4vw, 4.6rem);
   line-height: 1.02;
   letter-spacing: -0.05em;
@@ -743,7 +803,7 @@ img {
 .mission-scroll h1,
 .mission-scroll h2 {
   margin: 13px 0 10px;
-  font-family: ui-serif, "Noto Serif TC", serif;
+  font-family: var(--font-serif);
   font-size: clamp(1.9rem, 3vw, 2.7rem);
   line-height: 1.15;
 }
@@ -1087,7 +1147,7 @@ img {
 .passport-heading h2,
 .support-studio h2 {
   margin: 0;
-  font-family: ui-serif, "Noto Serif TC", serif;
+  font-family: var(--font-serif);
   font-size: clamp(1.9rem, 4vw, 3rem);
 }
 
@@ -1110,7 +1170,7 @@ img {
   color: #35260c;
   background: linear-gradient(145deg, #ffe09b, var(--gold));
   box-shadow: 0 14px 28px rgba(5, 5, 20, 0.25);
-  font-family: ui-serif, "Noto Serif TC", serif;
+  font-family: var(--font-serif);
   font-size: 1.65rem;
   font-weight: 900;
   transform: rotate(-4deg);
@@ -1134,7 +1194,7 @@ img {
 
 .passport-metric strong {
   color: var(--gold);
-  font-family: ui-serif, "Noto Serif TC", serif;
+  font-family: var(--font-serif);
   font-size: 1.75rem;
 }
 
@@ -1217,7 +1277,7 @@ img {
 
 .weekly-strategy-review h3 {
   margin: 2px 0 8px;
-  font-family: ui-serif, "Noto Serif TC", serif;
+  font-family: var(--font-serif);
   font-size: clamp(1.3rem, 3vw, 1.8rem);
 }
 
@@ -1298,7 +1358,7 @@ img {
 .featured-asset strong {
   display: block;
   color: var(--gold);
-  font-family: ui-serif, "Noto Serif TC", serif;
+  font-family: var(--font-serif);
   font-size: 1.2rem;
 }
 
@@ -1339,7 +1399,7 @@ img {
 .collection-cabinet__heading h3,
 .practice-history h3 {
   margin: 0;
-  font-family: ui-serif, "Noto Serif TC", serif;
+  font-family: var(--font-serif);
   font-size: clamp(1.45rem, 3vw, 2rem);
 }
 
@@ -1396,7 +1456,7 @@ img {
   border-radius: 50%;
   color: #2e210c;
   background: rgba(243, 183, 67, 0.88);
-  font-family: ui-serif, "Noto Serif TC", serif;
+  font-family: var(--font-serif);
   font-weight: 900;
 }
 
@@ -1415,7 +1475,7 @@ img {
 
 .relic-card__copy h4 {
   margin: 0;
-  font-family: ui-serif, "Noto Serif TC", serif;
+  font-family: var(--font-serif);
   font-size: 1.2rem;
 }
 
@@ -1487,7 +1547,7 @@ img {
   border-radius: 18px;
   color: #e9fff9;
   background: rgba(60, 165, 141, 0.1);
-  font-family: ui-serif, "Noto Serif TC", serif;
+  font-family: var(--font-serif);
   font-size: 1.05rem;
   line-height: 1.7;
 }
@@ -1588,7 +1648,7 @@ img {
 
 .section-heading h2 {
   margin: 0;
-  font-family: ui-serif, "Noto Serif TC", serif;
+  font-family: var(--font-serif);
   font-size: clamp(2rem, 4vw, 3.6rem);
   letter-spacing: -0.04em;
   text-wrap: balance;
@@ -1744,7 +1804,7 @@ img {
 
 .platform-card h3 {
   margin: 0;
-  font-family: ui-serif, "Noto Serif TC", serif;
+  font-family: var(--font-serif);
   font-size: 1.65rem;
 }
 
@@ -1812,9 +1872,56 @@ img {
   box-shadow: var(--shadow);
 }
 
+.platform-filter-summary {
+  display: flex;
+  min-height: 48px;
+  grid-column: 1 / -1;
+  align-items: center;
+  justify-content: space-between;
+  gap: 16px;
+  color: var(--paper);
+  cursor: pointer;
+  list-style: none;
+}
+
+.platform-filter-summary::-webkit-details-marker {
+  display: none;
+}
+
+.platform-filter-summary strong {
+  font-family: var(--font-serif);
+  font-size: clamp(1.25rem, 3vw, 1.8rem);
+}
+
+.platform-filter-summary span {
+  color: #8bd9c7;
+  font-size: 0.82rem;
+  font-weight: 800;
+}
+
+.platform-filter-summary::after {
+  color: #8bd9c7;
+  content: "＋";
+  font-size: 1.25rem;
+  font-weight: 900;
+}
+
+.platform-filter-panel[open] .platform-filter-summary::after {
+  content: "－";
+}
+
+.platform-filter-panel:not([open]) {
+  display: block;
+  padding-block: 12px;
+}
+
+.platform-filter-panel:not([open]) > :not(summary) {
+  display: none !important;
+}
+
 .platform-filter-panel h2 {
   margin: 0;
-  font-family: ui-serif, "Noto Serif TC", serif;
+  font-family: var(--font-serif);
   font-size: clamp(1.55rem, 3vw, 2.35rem);
 }
 
@@ -1937,7 +2044,7 @@ img {
 .realm-card h2,
 .realm-card h3 {
   margin: 0;
-  font-family: ui-serif, "Noto Serif TC", serif;
+  font-family: var(--font-serif);
   font-size: 1.55rem;
 }
 
@@ -1957,10 +2064,42 @@ img {
 }
 
 .route-options,
-.realm-card__routes {
+.realm-card__route-options {
   display: grid;
   grid-template-columns: repeat(3, 1fr);
   gap: 7px;
+}
+
+.realm-card__routes-summary {
+  display: flex;
+  min-height: 44px;
+  align-items: center;
+  justify-content: space-between;
+  padding: 9px 11px;
+  border: 1px solid color-mix(in srgb, var(--realm-accent) 48%, transparent);
+  border-radius: 12px;
+  color: #f8f2e7;
+  background: color-mix(in srgb, var(--realm-accent) 13%, rgba(5, 5, 20, 0.3));
+  cursor: pointer;
+  font-size: 0.82rem;
+  font-weight: 900;
+  list-style: none;
+}
+
+.realm-card__routes-summary::-webkit-details-marker {
+  display: none;
+}
+
+.realm-card__routes-summary::after {
+  content: "＋";
+}
+
+.realm-card__routes[open] .realm-card__routes-summary::after {
+  content: "－";
+}
+
+.realm-card__routes[open] .realm-card__route-options {
+  margin-top: 8px;
 }
 
 .route-button,
@@ -2008,7 +2147,7 @@ img {
 .shared-plan h2,
 .privacy-center h2 {
   margin: 0;
-  font-family: ui-serif, "Noto Serif TC", serif;
+  font-family: var(--font-serif);
   font-size: clamp(1.65rem, 3vw, 2.55rem);
 }
 
@@ -2209,6 +2348,54 @@ img {
   color: #8bd9c7;
 }
 
+.privacy-disclosure {
+  margin-top: 18px;
+  padding: 12px 14px;
+  border: 1px solid rgba(139, 217, 199, 0.24);
+  border-radius: 14px;
+  background: rgba(5, 5, 20, 0.16);
+}
+
+.privacy-disclosure > summary {
+  display: flex;
+  min-height: 44px;
+  align-items: center;
+  justify-content: space-between;
+  color: #f8f2e7;
+  cursor: pointer;
+  font-weight: 900;
+  list-style: none;
+}
+
+.privacy-disclosure > summary::-webkit-details-marker {
+  display: none;
+}
+
+.privacy-disclosure > summary::after {
+  color: #8bd9c7;
+  content: "＋";
+}
+
+.privacy-disclosure[open] > summary::after {
+  content: "－";
+}
+
+.privacy-disclosure:not([open]) > :not(summary) {
+  display: none !important;
+}
+
+.privacy-clear-all {
+  border-color: #e99a94 !important;
+  color: #fff4f2 !important;
+  background: rgba(153, 48, 43, 0.38) !important;
+}
+
+.privacy-clear-partial {
+  border-color: rgba(255, 248, 232, 0.28) !important;
+  color: var(--paper) !important;
+  background: rgba(255, 255, 255, 0.06) !important;
+}
+
 .realm-fallback,
 .realm-card__npc-fallback {
   max-width: 15rem;
@@ -2241,6 +2428,10 @@ img {
   opacity: 0;
   pointer-events: none;
   transform: translateY(14px);
+}
+
+.progress-dock[data-safe="shifted"] {
+  right: max(18px, env(safe-area-inset-right));
 }
 
 .progress-dock__toggle {
@@ -2282,7 +2473,7 @@ img {
 .role-notice h1,
 .role-notice h2 {
   margin: 0 0 8px;
-  font-family: ui-serif, "Noto Serif TC", serif;
+  font-family: var(--font-serif);
   font-size: clamp(2rem, 4vw, 3.6rem);
 }
 
@@ -2335,6 +2526,15 @@ img {
   .return-player-hud__subjects {
     grid-column: 1 / -1;
     grid-row: 2;
+    padding-right: 32px;
+    -webkit-mask-image: linear-gradient(to right, #000 0, #000 88%, transparent);
+    mask-image: linear-gradient(to right, #000 0, #000 88%, transparent);
+  }
+
+  .return-player-hud__scroll-hint {
+    display: block;
+    grid-column: 1 / -1;
+    grid-row: 3;
   }
 
   .hero {
@@ -2359,7 +2559,7 @@ img {
   }
 
   .realm-grid {
-    grid-template-columns: 1fr;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
   }
 
   .platform-grid {
@@ -2375,6 +2575,45 @@ img {
   .realm-character,
   .realm-card__npc {
     grid-row: span 3;
+    min-height: 180px;
+  }
+
+  .platform-card {
+    min-height: 0;
+  }
+
+  .platform-card__art {
+    height: 120px;
+    aspect-ratio: auto;
+  }
+
+  .platform-card__body {
+    padding: 12px 14px 14px;
+  }
+
+  .platform-description {
+    display: none;
+  }
+
+  .platform-caption {
+    display: none;
+  }
+
+  .platform-card h3 {
+    font-size: 1.4rem;
+  }
+
+  .platform-subject {
+    display: none;
+  }
+
+  .platform-learning-outcome {
+    margin: 8px 0 9px;
+    padding: 7px 9px;
+  }
+
+  .platform-learning-outcome p {
+    line-height: 1.4;
   }
 }
 
@@ -2467,6 +2706,20 @@ img {
   .role-panel {
     padding: 2px 13px;
     border-radius: 15px;
+  }
+
+  .role-notice h1,
+  .role-notice h2 {
+    font-size: clamp(1.7rem, 7vw, 2.15rem);
+    line-height: 1.18;
+  }
+
+  .platform-filter-summary span {
+    display: none;
+  }
+
+  .platform-filter-summary strong {
+    font-size: 1.2rem;
   }
 
   .role-panel__content {
@@ -2777,7 +3030,7 @@ img {
   }
 
   .route-options,
-  .realm-card__routes {
+  .realm-card__route-options {
     grid-template-columns: 1fr;
   }
 
@@ -2860,7 +3113,7 @@ img {
 .storage-notice,
 .quick-start-panel h2,
 .learning-path-panel h2 {
-  color: #2a251c;
+  color: var(--text-on-paper);
 }
 .quick-start-doors,
 .checkin-closure-actions,
@@ -2882,18 +3135,82 @@ img {
 .encouragement-feedback button {
   min-height: 44px;
 }
+.quick-start-summary,
+.learning-path-summary {
+  display: flex;
+  min-height: 44px;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  color: var(--text-on-paper);
+  cursor: pointer;
+  list-style: none;
+}
+.quick-start-summary::-webkit-details-marker,
+.learning-path-summary::-webkit-details-marker {
+  display: none;
+}
+.quick-start-summary strong,
+.learning-path-summary strong {
+  font-family: var(--font-serif);
+  font-size: clamp(1.25rem, 3vw, 1.7rem);
+}
+.quick-start-summary span,
+.learning-path-summary span {
+  color: #675d4b;
+  font-size: .82rem;
+  font-weight: 700;
+  text-align: end;
+}
+.quick-start-summary::after,
+.learning-path-summary::after {
+  color: #8d5b06;
+  content: "＋";
+  font-size: 1.35rem;
+  font-weight: 900;
+}
+.quick-start-panel[open] .quick-start-summary::after,
+.learning-path-panel[open] .learning-path-summary::after {
+  content: "－";
+}
+.quick-start-panel:not([open]),
+.learning-path-panel:not([open]) {
+  padding-block: .75rem;
+}
+.quick-start-doors button {
+  padding: 9px 13px;
+  border: 1px solid #8f826d;
+  border-radius: 12px;
+  color: var(--text-on-paper);
+  background: var(--surface-paper-strong);
+  font-weight: 800;
+}
+.quick-start-doors button[aria-pressed="true"] {
+  border-color: #8d5b06;
+  color: #31230b;
+  background: var(--gold);
+  box-shadow: 0 0 0 2px rgba(141, 91, 6, .16);
+}
 .quick-start-recommendation {
   margin-top: .65rem;
+  padding: 10px 14px;
+  border: 1px solid #263b31;
+  border-radius: 12px;
+  color: var(--action-primary-text);
+  background: var(--action-primary);
+  font-weight: 900;
 }
 .primary-closure {
-  background: #263b31;
-  color: #fff8df;
+  background: var(--action-primary);
+  color: var(--action-primary-text);
 }
 .secondary-mission-link {
   display: inline-flex;
   margin-inline-start: .75rem;
   min-height: 44px;
   align-items: center;
+  color: #51407e;
+  font-weight: 800;
 }
 .fourteen-day-path {
   display: grid;
@@ -2917,13 +3234,26 @@ img {
   gap: .75rem;
   margin-block: 1rem;
 }
-.privacy-layers article,
+.privacy-layers details,
 .teacher-facilitation-card,
 .teacher-budget-status,
 .parent-accompaniment {
   padding: 1rem;
   border-radius: .8rem;
-  background: rgba(255,255,255,.56);
+  color: #2a251c;
+  background: rgba(255, 251, 235, .94);
+}
+.privacy-layers summary {
+  display: flex;
+  min-height: 44px;
+  align-items: center;
+  color: #2a251c;
+  cursor: pointer;
+  font-weight: 900;
+}
+.privacy-layers p,
+.parent-accompaniment {
+  color: #2a251c;
 }
 .teacher-budget {
   display: flex;
@@ -2946,13 +3276,86 @@ img {
 .checkin-feedback--closed .checkin-next-target,
 .checkin-feedback--closed .checkin-closure-actions { display: none; }
 .storage-notice { display: flex; justify-content: space-between; align-items: center; }
-.reflection-share { display: flex; align-items: center; gap: .5rem; margin-top: .75rem; }
+.reflection-share {
+  display: flex;
+  min-height: 44px;
+  align-items: center;
+  gap: .65rem;
+  margin-top: .75rem;
+  cursor: pointer;
+}
+.reflection-share input {
+  width: 24px;
+  height: 24px;
+  flex: 0 0 24px;
+}
+.checkin-next-target > summary,
+.parent-evidence > summary,
+.optional-followup > summary,
+.mission-switcher > summary,
+.collection-cabinet > summary,
+.platform-source-list > summary,
+.teacher-facilitation-card > summary {
+  display: flex;
+  min-height: 44px;
+  align-items: center;
+}
+.checkin-closure-actions button,
+.badge-paths button {
+  padding: 9px 12px;
+  border: 1px solid #7f7666;
+  border-radius: 11px;
+  color: #2a251c;
+  background: #fffdf5;
+  font-weight: 800;
+}
+.checkin-closure-actions .primary-closure {
+  border-color: #263b31;
+  color: #fff8df;
+  background: #263b31;
+}
+.badge-paths button[aria-pressed="true"] {
+  border-color: #8d5b06;
+  background: var(--gold);
+}
+.support-tone-options button,
+.support-confirm,
+.support-copy {
+  min-height: 44px;
+}
+.support-confirm {
+  margin: 3px;
+  padding: 9px 12px;
+  border: 1px solid #8d5b06;
+  border-radius: 11px;
+  color: #31230b;
+  background: var(--gold);
+  cursor: pointer;
+  font-weight: 900;
+}
 
 @media (max-width: 700px) {
   .privacy-layers { grid-template-columns: 1fr; }
   .fourteen-day-path { grid-template-columns: repeat(2, minmax(0, 1fr)); }
   .quick-start-doors { display: grid; }
   .secondary-mission-link { margin: .5rem 0 0; }
+  .section-navigation {
+    width: 100%;
+    justify-content: space-between;
+    margin-block: 8px 14px;
+  }
+  .section-navigation a {
+    flex: 1 0 auto;
+    padding-inline: 10px;
+  }
+  .quick-start-summary,
+  .learning-path-summary {
+    align-items: flex-start;
+  }
+  .quick-start-summary span,
+  .learning-path-summary span {
+    display: none;
+  }
 }
 
 /* 2026-07-29：四位專家 30 條建議的可操作介面 */
@@ -3000,7 +3403,7 @@ img {
 
 .support-need-card h2 {
   margin: 0;
-  font-family: ui-serif, "Noto Serif TC", serif;
+  font-family: var(--font-serif);
 }
 
 .support-need-options,
@@ -3110,6 +3513,148 @@ img {
   color: #483f4c;
   background: rgba(60, 165, 141, 0.12);
   font-weight: 700;
+}
+
+.mission-success-criteria,
+.weekly-evidence-summary {
+  margin: 0;
+  padding-inline-start: 1.25rem;
+}
+
+.mission-stage,
+.offline-fallback,
+.exit-ticket,
+.student-dialogue-card,
+.teacher-lesson-plan {
+  padding: 12px;
+  border: 1px solid rgba(139, 217, 199, 0.25);
+  border-radius: 12px;
+  background: rgba(60, 165, 141, 0.08);
+}
+
+.offline-fallback summary {
+  min-height: 44px;
+  display: flex;
+  align-items: center;
+  cursor: pointer;
+  font-weight: 800;
+}
+
+.student-dialogue-card__copy {
+  min-height: 44px;
+}
+
+.exit-ticket,
+.reflection-choice-group,
+.quick-start-favorites,
+.teacher-mode-controls {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px;
+}
+
+.exit-ticket legend,
+.reflection-choice-group > span {
+  width: 100%;
+  font-weight: 800;
+}
+
+.exit-ticket button,
+.reflection-choice-group button,
+.quick-start-favorites button,
+.favorite-mission-button,
+.session-end-button,
+.teacher-mode-controls select {
+  min-height: 44px;
+}
+
+.session-end-button {
+  width: fit-content;
+  margin-top: 12px;
+  border-color: rgba(255, 248, 232, 0.22);
+  color: #ded8e4;
+  background: rgba(255, 255, 255, 0.04);
+  font-size: 0.82rem;
+}
+
+.student-dialogue-card {
+  margin-top: 12px;
+}
+
+.teacher-mode-controls {
+  margin-block: 14px;
+}
+
+.teacher-mode-controls label {
+  display: grid;
+  flex: 1 1 220px;
+  gap: 6px;
+  color: #ded8e4;
+  font-weight: 800;
+}
+
+.teacher-lesson-mission {
+  margin-block: 10px;
+  padding-block: 10px;
+  border-block-end: 1px solid rgba(255, 248, 232, 0.12);
+}
+
+.rest-mode {
+  min-height: 100vh;
+  color: #2d2d35;
+  background: #f4f1ea;
+}
+
+.rest-mode .site-header,
+.rest-mode .role-panel,
+.rest-mode .section-navigation,
+.rest-mode .ink-pool {
+  display: none;
+}
+
+.rest-mode-screen {
+  width: min(34rem, calc(100% - 32px));
+  margin: 18vh auto 0;
+  padding: 28px;
+  border: 1px solid #d4cec1;
+  border-radius: 18px;
+  color: #2d2d35;
+  background: #fffdf8;
+  box-shadow: none;
+}
+
+.rest-mode-screen h1 {
+  font-family: var(--font-serif);
+}
+
+.rest-mode-screen button,
+.rest-mode-screen a {
+  display: inline-flex;
+  align-items: center;
+  min-height: 44px;
+  margin: 8px 8px 0 0;
+}
+
+@media print {
+  body * {
+    visibility: hidden !important;
+  }
+
+  .teacher-lesson-plan,
+  .teacher-lesson-plan * {
+    visibility: visible !important;
+  }
+
+  .teacher-lesson-plan {
+    position: absolute;
+    inset: 0;
+    color: #111;
+    background: #fff;
+  }
+
+  .teacher-lesson-plan button {
+    display: none;
+  }
 }
 
 @media (max-width: 700px) {
