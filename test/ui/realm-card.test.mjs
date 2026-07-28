@@ -140,6 +140,26 @@ test("安全建立含橫幅敘事圖、妖域資訊與三條航線的可讀卡�
   assert.equal(fake.innerHtmlWrites, 0);
 });
 
+test("主域卡直接說明適用年段、核心能力與建議時間", () => {
+  const fake = createFakeDocument();
+  const card = createRealmCard(
+    fake.documentAdapter,
+    realmViewModel("zizizhuji", {
+      stage: "國小～國中",
+      learningOutcome: "辨認常見字音、字形與成語用法。",
+    }),
+  );
+
+  const guidance = findAll(
+    card,
+    ({ className }) => className === "realm-card__learning",
+  )[0];
+  assert.equal(
+    guidance.textContent,
+    "國小～國中・辨認常見字音、字形與成語用法。・每次 5／10／15 分鐘",
+  );
+});
+
 test("NPC 圖片失敗與未知角色都轉為可讀文字 fallback", () => {
   const knownFake = createFakeDocument();
   const knownCard = createRealmCard(

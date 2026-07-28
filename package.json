@@ -15,5 +15,8 @@
   "devDependencies": {
     "@playwright/test": "^1.62.0",
     "wrangler": "^4.114.0"
+  },
+  "dependencies": {
+    "qrcode-generator": "^2.0.4"
   }
 }

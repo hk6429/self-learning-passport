@@ -130,6 +130,12 @@ export function createRealmCard(
     SUBJECT_LABELS[realmViewModel.subject] ?? realmViewModel.subject,
     { className: "realm-card__subject" },
   );
+  const learning = createTextElement(
+    documentAdapter,
+    "p",
+    `${realmViewModel.stage}・${realmViewModel.learningOutcome}・每次 5／10／15 分鐘`,
+    { className: "realm-card__learning" },
+  );
   const routes = documentAdapter.createElement("div");
   routes.className = "realm-card__routes";
   routes.setAttribute("role", "group");
@@ -156,6 +162,7 @@ export function createRealmCard(
     createRealmFigure(documentAdapter, realmViewModel),
     heading,
     subject,
+    learning,
     routes,
   );
   return card;

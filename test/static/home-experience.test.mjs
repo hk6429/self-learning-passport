@@ -189,3 +189,73 @@ test("手機與平板把今日任務排在前面，並提供足夠大的觸控�
   assert.match(styles, /env\(safe-area-inset-bottom\)/);
   assert.match(styles, /-webkit-text-size-adjust:\s*100%/);
 });
+
+test("首頁提供學生、家長與老師可切換的使用說明書", async () => {
+  const [app, styles] = await Promise.all([
+    readProjectFile("src/app.js"),
+    readProjectFile("styles.css"),
+  ]);
+
+  assert.match(app, /使用說明書/);
+  assert.match(app, /id:\s*"user-manual-dialog"/);
+  assert.match(app, /aria-label":\s*"開啟使用說明書"/);
+  assert.match(app, /學生版/);
+  assert.match(app, /家長版/);
+  assert.match(app, /老師版/);
+  assert.match(app, /回到護照落印/);
+  assert.match(app, /同行鼓勵卡/);
+  assert.match(app, /依領域、時間與使用情境篩選/);
+  assert.match(app, /個人學習資料只保存在這台裝置的瀏覽器/);
+
+  assert.match(styles, /\.manual-dialog/);
+  assert.match(styles, /\.manual-role-switcher/);
+  assert.match(styles, /\.manual-step-list/);
+  assert.match(styles, /\.header-actions/);
+  assert.match(styles, /\.manual-open-button\s*\{[^}]*min-height:\s*44px/s);
+});
+
+test("老師可複選班級任務並用連結、學生預覽與 QR Code 分享", async () => {
+  const [app, styles] = await Promise.all([
+    readProjectFile("src/app.js"),
+    readProjectFile("styles.css"),
+  ]);
+
+  assert.match(app, /createTeacherPlanStudio/);
+  assert.match(app, /teacherSelectedMissionIds/);
+  assert.match(app, /複製學生連結/);
+  assert.match(app, /預覽學生畫面/);
+  assert.match(app, /createQrFigure/);
+  assert.match(app, /已達 14 個任務上限/);
+  assert.match(app, /sharedPlan && !sharedPlan\.invalid\s*\? "student"/);
+  assert.match(styles, /\.teacher-plan-studio/);
+  assert.match(styles, /\.teacher-plan-qr/);
+});
+
+test("家長首屏提供今日任務、學習證據、平台篩選與本機隱私控制", async () => {
+  const [app, styles] = await Promise.all([
+    readProjectFile("src/app.js"),
+    readProjectFile("styles.css"),
+  ]);
+
+  assert.match(app, /createParentTodayCard/);
+  assert.match(app, /孩子今天的自評/);
+  assert.match(app, /參與，不等於已經學會/);
+  assert.match(app, /createPlatformFilterPanel\("parent"\)/);
+  assert.match(app, /createPrivacyCenter\("parent"\)/);
+  assert.match(app, /清除這台裝置的護照資料/);
+  assert.match(app, /\.parent-today-card, \.teacher-plan-studio, \.shared-plan/);
+  assert.match(styles, /\.parent-today-card/);
+  assert.match(styles, /\.privacy-center/);
+});
+
+test("學生可低輸入留下學習證據，純任務模式只出現在學生身份", async () => {
+  const [app, styles] = await Promise.all([
+    readProjectFile("src/app.js"),
+    readProjectFile("styles.css"),
+  ]);
+
+  assert.match(app, /今天最接近/);
+  assert.match(app, /我弄懂了一個重點/);
+  assert.match(app, /activeRole === "student"/);
+  assert.match(styles, /\.learning-evidence-options/);
+});

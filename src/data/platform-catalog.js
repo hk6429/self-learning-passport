@@ -53,7 +53,7 @@ export const SOURCE_PLATFORM_CATALOG = Object.freeze(
       usageContexts: ["self", "class"],
       stage: "國中",
       mode: "閱讀解謎",
-      duration: "可分段使用",
+      duration: "建議先預留 10 分鐘・可分段",
       url: "https://tulou-escape.vercel.app/index.html",
       art: {
         src: "/assets/platforms/tulou-escape-v1.webp",
@@ -125,7 +125,7 @@ export const SOURCE_PLATFORM_CATALOG = Object.freeze(
       usageContexts: ["self", "homeroom"],
       stage: "國中",
       mode: "養成經營",
-      duration: "可分段使用",
+      duration: "建議先預留 10 分鐘・可分段",
       url: "https://habit-tycoon.pages.dev/",
       art: {
         src: "/assets/platforms/habit-tycoon-v1.webp",
@@ -149,7 +149,7 @@ export const SOURCE_PLATFORM_CATALOG = Object.freeze(
       usageContexts: ["self", "class", "homeroom"],
       stage: "國中以上",
       mode: "互動小說",
-      duration: "可分段使用",
+      duration: "建議先預留 10 分鐘・可分段",
       url: "https://fanren-lianxin.pages.dev/",
       art: {
         src: "/assets/realms/fanren-lianxin-v2.webp",
@@ -173,7 +173,7 @@ export const SOURCE_PLATFORM_CATALOG = Object.freeze(
       usageContexts: ["professional"],
       stage: "教師",
       mode: "職涯模擬",
-      duration: "可分段使用",
+      duration: "建議先預留 10 分鐘・可分段",
       url: "https://teacher-tycoon.pages.dev/",
       art: {
         src: "/assets/platforms/teacher-tycoon-v1.webp",
@@ -197,7 +197,7 @@ export const SOURCE_PLATFORM_CATALOG = Object.freeze(
       usageContexts: ["homeroom", "professional"],
       stage: "教師",
       mode: "導師情境",
-      duration: "可分段使用",
+      duration: "建議先預留 10 分鐘・可分段",
       url: "https://xinshou-daoshi.pages.dev/",
       art: {
         src: "/assets/platforms/xinshou-daoshi-v1.webp",
