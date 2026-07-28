@@ -1666,8 +1666,9 @@ function createPassportSection(home) {
   const metrics = node("div", { className: "passport-metrics" });
   for (const [value, label] of [
     [snapshot.xp, "習光"],
-    [snapshot.level, "護照等級"],
-    [snapshot.stamps, "任務妖印"],
+    [snapshot.growthStage.label, "成長階段"],
+    [snapshot.stamps, "學習落印"],
+    [snapshot.restMarks, "歇腳記號"],
     [snapshot.exploredRealms, "已探索主域"],
   ]) {
     const metric = node("article", { className: "passport-metric" });
@@ -1679,18 +1680,49 @@ function createPassportSection(home) {
   }
 
   const progress = node("div", {
-    className: "passport-progress",
-    attributes: {
-      role: "progressbar",
-      "aria-label": "下一等級進度",
-      "aria-valuemin": "0",
-      "aria-valuemax": "100",
-      "aria-valuenow": String(snapshot.levelProgress),
-    },
+    className: "passport-progress growth-stage-note",
   });
-  const progressFill = node("span");
-  progressFill.style.width = `${snapshot.levelProgress}%`;
-  progress.append(progressFill);
+  progress.append(
+    node("strong", { text: `目前階段：${snapshot.growthStage.label}` }),
+    node("span", {
+      text: `${snapshot.growthStage.description} 階段依探索、策略與回顧形成，不靠重複刷習光升級。`,
+    }),
+  );
+
+  const realmMap = node("section", {
+    className: "realm-growth-map",
+    attributes: { "aria-labelledby": "realm-growth-map-heading" },
+  });
+  realmMap.append(
+    node("h3", {
+      text: "七域能力足跡",
+      attributes: { id: "realm-growth-map-heading" },
+    }),
+    node("p", {
+      text: "不同任務與學習證據會讓妖域從初見、甦醒到復明；同一任務重複不會刷階。",
+    }),
+  );
+  const realmMapGrid = node("div");
+  if (snapshot.realmProgress.length === 0) {
+    realmMapGrid.append(
+      node("p", { text: "完成第一條航線後，能力足跡會從這裡亮起。" }),
+    );
+  } else {
+    for (const realm of snapshot.realmProgress) {
+      const platform = getCorePlatform(realm.siteId, "student");
+      const card = node("article");
+      card.append(
+        node("strong", { text: platform?.title ?? realm.siteId }),
+        node("span", { text: realm.stage.label }),
+        node("p", {
+          text: `${realm.distinctMissions} 條不同航線・${realm.evidenceCount} 則學習證據`,
+        }),
+        node("small", { text: realm.next }),
+      );
+      realmMapGrid.append(card);
+    }
+  }
+  realmMap.append(realmMapGrid);
 
   const settings = node("div", { className: "passport-settings" });
   const northStar = node("fieldset", { className: "passport-choice" });
@@ -1819,17 +1851,18 @@ function createPassportSection(home) {
   );
   collection.append(featuredCard, badgeCard, mysteryCard);
 
-  section.append(heading, metrics, progress, settings, collection);
+  section.append(heading, metrics, progress, realmMap, settings, collection);
   const weeklyStrategyReview = createWeeklyStrategyReview();
   if (weeklyStrategyReview) {
     section.append(weeklyStrategyReview);
   }
 
-  const cabinet = node("section", {
+  const cabinet = node("details", {
     className: "collection-cabinet",
     attributes: { "aria-labelledby": "collection-cabinet-heading" },
   });
-  const cabinetHeading = node("header", {
+  cabinet.open = localState.student.gameplay?.collectionExpanded === true;
+  const cabinetHeading = node("summary", {
     className: "collection-cabinet__heading",
   });
   const cabinetHeadingCopy = node("div");
@@ -1942,6 +1975,19 @@ function createPassportSection(home) {
     cabinetGrid.append(card);
   }
   cabinet.append(cabinetHeading, cabinetGrid);
+  cabinet.addEventListener("toggle", () => {
+    localState = {
+      ...localState,
+      student: {
+        ...localState.student,
+        gameplay: {
+          ...(localState.student.gameplay ?? {}),
+          collectionExpanded: cabinet.open,
+        },
+      },
+    };
+    saveLocalState();
+  });
   section.append(cabinet);
 
   const history = node("section", {
