@@ -171,3 +171,21 @@ test("平台卡呈現學習能力，老師可篩選，學生每七個活躍日�
   assert.match(styles, /\.platform-filter-panel/);
   assert.match(styles, /\.weekly-strategy-review/);
 });
+
+test("手機與平板把今日任務排在前面，並提供足夠大的觸控區與橫滑導覽", async () => {
+  const [index, styles] = await Promise.all([
+    readProjectFile("index.html"),
+    readProjectFile("styles.css"),
+  ]);
+
+  assert.match(index, /width=device-width,\s*initial-scale=1/);
+  assert.match(styles, /\.mission-scroll\s*\{\s*grid-row:\s*1/);
+  assert.match(styles, /\.role-summary\s*\{[^}]*min-height:\s*44px/s);
+  assert.match(styles, /\.role-button\s*\{[^}]*min-height:\s*44px/s);
+  assert.match(
+    styles,
+    /\.realm-grid,\s*\.platform-grid\s*\{[^}]*scroll-snap-type:\s*x mandatory/s,
+  );
+  assert.match(styles, /env\(safe-area-inset-bottom\)/);
+  assert.match(styles, /-webkit-text-size-adjust:\s*100%/);
+});

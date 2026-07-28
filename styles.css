@@ -29,6 +29,7 @@ html {
   min-width: 320px;
   background: var(--ink);
   scroll-behavior: smooth;
+  -webkit-text-size-adjust: 100%;
 }
 
 body {
@@ -45,6 +46,7 @@ body {
 button,
 a {
   font: inherit;
+  touch-action: manipulation;
 }
 
 button {
@@ -67,7 +69,8 @@ img {
   isolation: isolate;
   width: min(1180px, calc(100% - 40px));
   margin: 0 auto;
-  padding: 26px 0 110px;
+  padding: calc(26px + env(safe-area-inset-top)) 0
+    calc(110px + env(safe-area-inset-bottom));
 }
 
 .ink-pool {
@@ -142,7 +145,7 @@ img {
 .mode-toggle {
   display: grid;
   gap: 1px;
-  min-height: 42px;
+  min-height: 44px;
   padding: 8px 14px;
   border: 1px solid var(--line);
   border-radius: 999px;
@@ -171,6 +174,9 @@ img {
 }
 
 .role-summary {
+  display: flex;
+  min-height: 44px;
+  align-items: center;
   color: var(--paper);
   cursor: pointer;
   font-size: 0.88rem;
@@ -242,7 +248,7 @@ img {
 }
 
 .world-guide button {
-  min-height: 40px;
+  min-height: 44px;
   flex: 0 0 auto;
   padding: 7px 12px;
   border: 1px solid rgba(243, 183, 67, 0.36);
@@ -285,7 +291,10 @@ img {
   min-width: 0;
   padding: 3px 0;
   overflow-x: auto;
+  overscroll-behavior-inline: contain;
+  scroll-snap-type: x proximity;
   scrollbar-width: thin;
+  -webkit-overflow-scrolling: touch;
 }
 
 .return-player-hud__subjects button {
@@ -297,6 +306,7 @@ img {
   color: var(--muted);
   background: rgba(255, 255, 255, 0.06);
   cursor: pointer;
+  scroll-snap-align: start;
   white-space: nowrap;
 }
 
@@ -320,7 +330,7 @@ img {
 }
 
 .role-button {
-  min-height: 42px;
+  min-height: 44px;
   padding: 8px 14px;
   border: 0;
   border-radius: 12px;
@@ -375,6 +385,7 @@ img {
 .map-stage > div:first-child {
   position: relative;
   z-index: 2;
+  align-self: start;
   min-width: 0;
 }
 
@@ -543,7 +554,7 @@ img {
 }
 
 .mission-switcher__options button {
-  min-height: 42px;
+  min-height: 44px;
   padding: 8px 10px;
   border: 1px solid rgba(80, 61, 43, 0.18);
   border-radius: 11px;
@@ -796,7 +807,7 @@ img {
 
 .reflection-field input {
   min-width: 0;
-  min-height: 42px;
+  min-height: 44px;
   padding: 9px 11px;
   border: 1px solid rgba(80, 61, 43, 0.2);
   border-radius: 11px;
@@ -1017,7 +1028,7 @@ img {
 }
 
 .badge-token {
-  min-height: 42px;
+  min-height: 44px;
   padding: 7px 10px;
   border: 1px solid rgba(243, 183, 67, 0.2);
   border-radius: 999px;
@@ -1302,7 +1313,7 @@ img {
 }
 
 .restorative-link {
-  min-height: 42px;
+  min-height: 44px;
   padding: 9px 14px;
   border: 1px solid rgba(255, 248, 232, 0.22);
   border-radius: 12px;
@@ -1733,7 +1744,7 @@ img {
   position: fixed;
   z-index: 10;
   right: max(18px, calc((100vw - 1180px) / 2));
-  bottom: 18px;
+  bottom: max(18px, env(safe-area-inset-bottom));
   padding: 0;
   border: 1px solid rgba(243, 183, 67, 0.32);
   border-radius: 999px;
@@ -1851,6 +1862,14 @@ img {
     grid-template-columns: 1fr;
   }
 
+  .mission-scroll {
+    grid-row: 1;
+  }
+
+  .map-stage {
+    grid-row: 2;
+  }
+
   .map-stage,
   .mission-scroll {
     min-height: auto;
@@ -1883,11 +1902,26 @@ img {
 @media (max-width: 767px) {
   .app-shell {
     width: min(100% - 24px, 640px);
-    padding-top: 14px;
+    padding-top: calc(10px + env(safe-area-inset-top));
   }
 
   .site-header {
-    margin-bottom: 14px;
+    gap: 10px;
+    margin-bottom: 8px;
+  }
+
+  .brand-lockup {
+    gap: 8px;
+  }
+
+  .brand-seal {
+    width: 38px;
+    border-radius: 11px;
+  }
+
+  .brand-copy strong {
+    font-size: 0.94rem;
+    letter-spacing: 0.04em;
   }
 
   .brand-copy span {
@@ -1895,13 +1929,19 @@ img {
   }
 
   .mode-toggle {
-    padding-inline: 11px;
-    font-size: 0.82rem;
+    min-width: 44px;
+    padding: 6px 10px;
+    font-size: 0.8rem;
+    text-align: center;
+  }
+
+  .mode-toggle span {
+    display: none;
   }
 
   .role-panel {
-    padding: 14px;
-    border-radius: 18px;
+    padding: 2px 13px;
+    border-radius: 15px;
   }
 
   .role-panel__content {
@@ -1921,30 +1961,47 @@ img {
   }
 
   .world-guide {
-    display: grid;
-    gap: 10px;
-    padding: 13px 14px;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    padding: 9px 10px 9px 13px;
+    border-radius: 15px;
+  }
+
+  .world-guide > div {
+    min-width: 0;
+  }
+
+  .world-guide strong {
+    font-size: 0.84rem;
+  }
+
+  .world-guide p {
+    margin-top: 2px;
+    font-size: 0.7rem;
+    line-height: 1.4;
   }
 
   .world-guide button {
-    width: 100%;
+    min-width: 68px;
+    padding-inline: 9px;
   }
 
   .hero {
     display: flex;
     flex-direction: column-reverse;
-    gap: 14px;
-    margin-top: 14px;
+    gap: 12px;
+    margin-top: 12px;
   }
 
   .mission-scroll {
-    min-height: min(490px, calc(100svh - 205px));
-    padding: 25px 22px 28px;
-    border-radius: 24px;
+    min-height: min(490px, calc(100svh - 150px));
+    padding: 22px 18px 24px;
+    border-radius: 22px;
   }
 
   .mission-scroll h2 {
-    font-size: 1.9rem;
+    font-size: clamp(1.85rem, 9vw, 2.35rem);
   }
 
   .mission-switcher__options {
@@ -1953,24 +2010,27 @@ img {
 
   .map-stage {
     min-height: auto;
-    grid-template-columns: 1fr;
-    padding: 25px 22px;
-    border-radius: 24px;
+    grid-template-columns: minmax(0, 1fr) minmax(88px, 30%);
+    gap: 12px;
+    padding: 20px 18px;
+    border-radius: 22px;
   }
 
   .hero h1 {
-    font-size: clamp(2.35rem, 13vw, 3.8rem);
+    max-width: 12ch;
+    font-size: clamp(1.8rem, 8vw, 2.35rem);
+    line-height: 1.12;
   }
 
   .hero-lead {
-    margin-top: 14px;
-    font-size: 0.94rem;
-    line-height: 1.65;
+    margin-top: 10px;
+    font-size: 0.8rem;
+    line-height: 1.55;
   }
 
   .guide-figure {
     justify-self: center;
-    width: min(54vw, 210px);
+    width: min(100%, 126px);
     margin: 0;
   }
 
@@ -2019,9 +2079,13 @@ img {
     display: flex;
     gap: 12px;
     margin-inline: -17px;
-    padding-inline: 17px;
+    padding: 2px 17px 10px;
     overflow-x: auto;
+    overscroll-behavior-inline: contain;
+    scroll-padding-inline: 17px;
     scroll-snap-type: x mandatory;
+    scrollbar-width: thin;
+    -webkit-overflow-scrolling: touch;
   }
 
   .relic-card {
@@ -2044,7 +2108,7 @@ img {
 
   .realm-section,
   .platform-section {
-    margin-top: 50px;
+    margin-top: 42px;
   }
 
   .passport-heading {
@@ -2067,16 +2131,38 @@ img {
   .section-heading {
     display: grid;
     gap: 10px;
+    margin-bottom: 14px;
+  }
+
+  .realm-section .section-heading::after,
+  .platform-section .section-heading::after {
+    color: var(--gold);
+    content: "左右滑動查看更多 →";
+    font-size: 0.75rem;
+    font-weight: 800;
   }
 
   .realm-card {
     display: block;
+    width: min(84vw, 330px);
+    flex: 0 0 min(84vw, 330px);
     padding: 18px;
     border-radius: 23px;
+    scroll-snap-align: start;
   }
 
+  .realm-grid,
   .platform-grid {
-    grid-template-columns: 1fr;
+    display: flex;
+    gap: 12px;
+    margin-inline: -12px;
+    padding: 2px 12px 12px;
+    overflow-x: auto;
+    overscroll-behavior-inline: contain;
+    scroll-padding-inline: 12px;
+    scroll-snap-type: x mandatory;
+    scrollbar-width: thin;
+    -webkit-overflow-scrolling: touch;
   }
 
   .platform-filter-panel,
@@ -2085,12 +2171,20 @@ img {
   }
 
   .platform-card {
+    width: min(84vw, 340px);
+    flex: 0 0 min(84vw, 340px);
     min-height: 0;
     border-radius: 22px;
+    scroll-snap-align: start;
   }
 
   .platform-card__body {
     padding: 17px;
+  }
+
+  .platform-filter-field select,
+  .reflection-field input {
+    font-size: 1rem;
   }
 
   .realm-character,
@@ -2121,7 +2215,7 @@ img {
 
   .progress-dock {
     right: 12px;
-    bottom: 12px;
+    bottom: max(12px, env(safe-area-inset-bottom));
     width: 56px;
     max-width: calc(100vw - 24px);
     overflow: hidden;
