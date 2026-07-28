@@ -23,6 +23,7 @@
 - 家長與老師頁提供資料保存、外站來源、問題回報及清除本機護照的完整說明。
 - 每七個活躍日提供一次低輸入策略回顧，可略過且只保存在本機。
 - 休息與中斷不會清除成果，回來時可從五分鐘航線重新開始。
+- 四位遊戲化專家提出的 30 條優化已落地：今日心力推薦、真實學習證據、永久七燈書、健康習光上限、同行需求卡、本機健康循環，以及班級共同／任選航線。
 
 ## 正式網站
 
@@ -72,6 +73,8 @@ npm run test:e2e
 - 實作計畫：`docs/superpowers/plans/2026-07-27-self-learning-passport-yaoguai-implementation.md`
 - 資產計畫：`docs/superpowers/plans/2026-07-27-self-learning-passport-yaoguai-assets.md`
 - 八角理論評分：`docs/verification/octalysis-score-2026-07-27.md`
+- 四位專家 30 條審查：`docs/verification/gamification-review-2026-07-29.md`
+- 30 項健康遊戲化實作紀錄：`docs/verification/gameful-optimization-30-2026-07-29.md`
 
 ## 部署
 

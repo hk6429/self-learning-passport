@@ -21,6 +21,7 @@ const EVENT_TYPES = new Set([
   "milestone_reached",
   "recovery_viewed",
   "rest_suggested",
+  "rest_adopted",
 ]);
 
 const MISSION_IDS = new Set(MISSION_CATALOG.map(({ id }) => id));

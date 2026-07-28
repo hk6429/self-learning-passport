@@ -28,9 +28,10 @@ const EVENT_TYPES = [
   "milestone_reached",
   "recovery_viewed",
   "rest_suggested",
+  "rest_adopted",
 ];
 
-test("只接受規格列出的 20 種本機量測事件", () => {
+test("只接受規格列出的 21 種本機量測事件", () => {
   let events = [];
 
   for (const [index, type] of EVENT_TYPES.entries()) {

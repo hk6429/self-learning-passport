@@ -55,7 +55,6 @@ import {
   getFairCheckInXp,
   getMissionSuccessCue,
   normalizeReflection,
-  recommendMission,
 } from "./domain/gameful-guidance.js";
 
 const app = document.querySelector("#app");
@@ -974,6 +973,10 @@ function createQuickStartPanel(home, mission) {
       className: "recommendation-reason",
       text: recommendation.reason,
     }),
+    node("p", {
+      className: "recommendation-outcome",
+      text: `今天會練到：${getMissionLearningOutcome(recommendation.mission)}`,
+    }),
   );
   const doors = node("div", {
     className: "quick-start-doors",
@@ -1113,12 +1116,18 @@ function createHealthyRestCard() {
     text: "我想繼續",
     attributes: { type: "button" },
   });
-  const dismiss = () => {
+  const dismiss = (outcome) => {
+    if (outcome === "complete") {
+      appendLocalEvent("rest_adopted", {
+        missionId: pendingReturnMissionId,
+        outcome,
+      });
+    }
     restSuggestion = null;
     render();
   };
-  rest.addEventListener("click", dismiss);
-  continueButton.addEventListener("click", dismiss);
+  rest.addEventListener("click", () => dismiss("complete"));
+  continueButton.addEventListener("click", () => dismiss("skipped"));
   actions.append(rest, continueButton);
   card.append(actions);
   return card;
@@ -1126,6 +1135,9 @@ function createHealthyRestCard() {
 
 function createLearningPathPanel() {
   const snapshot = buildPassportSnapshot(localState.student);
+  const sevenLights = getSevenLights({
+    activeDays: localState.student.activeDays ?? [],
+  });
   const reports = Object.values(localState.student.missionHistory ?? {})
     .flatMap((value) => (Array.isArray(value) ? value : [value]))
     .filter(Boolean);
@@ -1143,10 +1155,12 @@ function createLearningPathPanel() {
   });
   section.append(
     node("h2", {
-      text: "最近 14 天的燈路",
+      text: `七燈書・第 ${sevenLights.currentBook} 冊`,
       attributes: { id: "learning-path-heading" },
     }),
-    node("p", { text: "任選 7 天，不必連續；休息也是照顧節奏的一部分。" }),
+    node("p", {
+      text: `每 7 個投入日永久完成一冊，目前已完成 ${sevenLights.completedBooks} 冊；不必連續，休息也會留下節奏記號。下方保留最近 14 天供自己回望。`,
+    }),
   );
   const grid = node("ol", {
     className: "fourteen-day-path",
@@ -1207,7 +1221,7 @@ function createMissionLearningBrief(mission) {
   reward.append(
     node("summary", { text: "查看投入紀錄方式" }),
     node("p", {
-      text: `${brief.rewardNote} 這次完整或部分完成皆記錄 ${getMissionReward(mission)} 習光。`,
+      text: `${brief.rewardNote} 這次完整或部分完成的基礎值皆為 ${getMissionReward(mission)} 習光；同日投入超過 30 分鐘後會減半，60 分鐘後停止增加，足跡仍會完整保留。`,
     }),
   );
   section.append(reward);
@@ -1330,15 +1344,25 @@ function createCheckInFeedback(mission, report, guideCelebration) {
       }),
     );
   } else {
-    const earnedXp = getMissionReward(mission, report.status);
     const lights = getSevenLights({
       activeDays: localState.student.activeDays,
     });
     const snapshot = buildPassportSnapshot(localState.student);
+    const earnedXp =
+      snapshot.recentHistory.find(
+        (item) =>
+          item.missionId === mission.id &&
+          item.occurredAt === report.occurredAt,
+      )?.earnedXp ?? 0;
     const mystery = getLatestMystery(localState.student);
     const rewards = node("div", { className: "checkin-rewards" });
     rewards.append(
-      node("span", { text: `＋${earnedXp} 習光` }),
+      node("span", {
+        text:
+          earnedXp > 0
+            ? `＋${earnedXp} 習光`
+            : "今日習光已柔性收束，足跡仍完整保存",
+      }),
       node("span", { text: `七燈 ${lights.litCount}／7` }),
     );
     copy.append(
@@ -1914,6 +1938,10 @@ function createPassportSection(home) {
       }),
       node("h4", { text: relic.label }),
       node("p", { text: relic.story }),
+      node("p", {
+        className: "relic-card__meaning",
+        text: `這件收藏記錄：${relic.learningMeaning}`,
+      }),
     );
     if (relic.unlocked) {
       copy.append(
@@ -2057,7 +2085,7 @@ function createPassportSection(home) {
     const feedback = node("div", { className: "encouragement-feedback" });
     for (const [id, label] of [
       ["helpful", "這句有幫助"],
-      ["different", "想換一種說法"],
+      ["self", "我現在想自己走"],
       ["hide", "今天先收起來"],
     ]) {
       const button = node("button", {
@@ -2238,6 +2266,16 @@ function createParentTodayCard(mission) {
           : "這則反思由孩子保留；家長只看見參與狀態。參與，不等於已經學會。",
     }),
   );
+  const conversation = node("aside", { className: "parent-conversation-prompt" });
+  conversation.append(
+    node("strong", { text: "今晚可以這樣問" }),
+    node("p", {
+      text: getParentConversationPrompt({
+        status: report?.status,
+        evidenceId: report?.evidenceId,
+      }),
+    }),
+  );
   const action = node("button", {
     className: "parent-today-action",
     text: report ? "切到學生護照查看" : "陪孩子開始這項任務",
@@ -2251,7 +2289,7 @@ function createParentTodayCard(mission) {
     render();
     document.querySelector("#daily-mission-title")?.focus();
   });
-  section.append(heading, accompany, evidence, action);
+  section.append(heading, accompany, evidence, conversation, action);
   return section;
 }
 
@@ -2303,6 +2341,28 @@ function createPrivacyCenter(activeRole) {
     sourceList.append(node("li", { text: hostname }));
   }
   sources.append(sourceList);
+
+  const metrics = buildLocalMetrics(
+    localState.student.measurementEvents ?? [],
+  );
+  const localMetrics = node("details", { className: "local-metrics" });
+  localMetrics.append(
+    node("summary", { text: "查看本機健康循環摘要" }),
+    node("p", {
+      text: "只用來檢查流程是否健康，不計總時數、不做排名，預設不會上傳。",
+    }),
+  );
+  const metricList = node("ul");
+  for (const [label, value] of [
+    ["開始後回到護照", `${metrics.returnRate}%`],
+    ["主動選擇策略", `${metrics.strategySelections} 次`],
+    ["收到休息提醒", `${metrics.restSuggestions} 次`],
+    ["採用休息提醒", `${metrics.restAccepted} 次`],
+    ["留下真實落印", `${metrics.missionReports} 次`],
+  ]) {
+    metricList.append(node("li", { text: `${label}：${value}` }));
+  }
+  localMetrics.append(metricList);
 
   const actions = node("div", { className: "privacy-actions" });
   const issues = node("a", {
@@ -2362,7 +2422,7 @@ function createPrivacyCenter(activeRole) {
     if (result.status === "cleared") render();
   });
   actions.append(issues, clearStudent, clearTeacher, clear);
-  section.append(facts, layers, sources, actions, status);
+  section.append(facts, layers, localMetrics, sources, actions, status);
   return section;
 }
 
@@ -2468,6 +2528,8 @@ function createTeacherPlanStudio() {
       teacherSelectedMissionIds = teacherSelectedMissionIds.filter(
         (missionId) => missionId !== mission.id,
       );
+      delete teacherAssignmentByMission[mission.id];
+      delete teacherPhaseByMission[mission.id];
       teacherPlanNotice = `已移除「${mission.title}」。`;
       saveTeacherDraft();
       render();
@@ -2501,7 +2563,47 @@ function createTeacherPlanStudio() {
       });
       reorder.append(move);
     }
-    item.append(copy, reorder, remove);
+    const settings = node("div", { className: "teacher-mission-settings" });
+    const assignment = node("label");
+    assignment.append(node("span", { text: "任務規則" }));
+    const assignmentSelect = node("select", {
+      attributes: { "aria-label": `${mission.title}任務規則` },
+    });
+    for (const [value, label] of [["required", "共同必走"], ["choice", "任選一站"]]) {
+      assignmentSelect.append(
+        node("option", { text: label, attributes: { value } }),
+      );
+    }
+    assignmentSelect.value =
+      teacherAssignmentByMission[mission.id] ?? "required";
+    assignmentSelect.addEventListener("change", () => {
+      teacherAssignmentByMission[mission.id] = assignmentSelect.value;
+      saveTeacherDraft();
+      render();
+    });
+    assignment.append(assignmentSelect);
+
+    const phase = node("label");
+    phase.append(node("span", { text: "課堂階段" }));
+    const phaseSelect = node("select", {
+      attributes: { "aria-label": `${mission.title}課堂階段` },
+    });
+    for (const [value, label] of [
+      ["warmup", "暖身"],
+      ["core", "核心"],
+      ["closing", "收尾"],
+    ]) {
+      phaseSelect.append(node("option", { text: label, attributes: { value } }));
+    }
+    phaseSelect.value = teacherPhaseByMission[mission.id] ?? "core";
+    phaseSelect.addEventListener("change", () => {
+      teacherPhaseByMission[mission.id] = phaseSelect.value;
+      saveTeacherDraft();
+      render();
+    });
+    phase.append(phaseSelect);
+    settings.append(assignment, phase);
+    item.append(copy, settings, reorder, remove);
     list.append(item);
   });
 
@@ -2531,10 +2633,40 @@ function createTeacherPlanStudio() {
     questions.append(node("li", { text: question }));
   }
   facilitationCard.append(questions);
+  const closingField = node("label", { className: "teacher-closing-prompt" });
+  closingField.append(node("span", { text: "全班共同收束問題" }));
+  const closingSelect = node("select", {
+    attributes: { "aria-label": "全班共同收束問題" },
+  });
+  for (const prompt of CLOSING_PROMPTS) {
+    closingSelect.append(
+      node("option", {
+        text: prompt.label,
+        attributes: { value: prompt.id },
+      }),
+    );
+  }
+  closingSelect.value = teacherClosingPromptId;
+  closingSelect.addEventListener("change", () => {
+    teacherClosingPromptId = closingSelect.value;
+    saveTeacherDraft();
+    render();
+  });
+  closingField.append(closingSelect);
+  const loadGuidance = getTeacherLoadGuidance(missions);
+  const loadNotice = node("p", {
+    className: loadGuidance.overloaded
+      ? "teacher-load-guidance teacher-load-guidance--over"
+      : "teacher-load-guidance",
+    text: loadGuidance.message,
+  });
   const shareUrl = createSharedPlanUrl({
     baseUrl: `${window.location.origin}${window.location.pathname}`,
     missionIds: teacherSelectedMissionIds,
     catalog: MISSION_CATALOG,
+    assignmentByMission: teacherAssignmentByMission,
+    phaseByMission: teacherPhaseByMission,
+    closingPromptId: teacherClosingPromptId,
   });
   const shareArea = node("div", { className: "teacher-plan-share" });
   const actions = node("div", { className: "teacher-plan-actions" });
@@ -2585,7 +2717,15 @@ function createTeacherPlanStudio() {
     actions,
     node("code", { className: "teacher-plan-url", text: shareUrl }),
   );
-  section.append(list, summaryLine, budgetNotice, facilitationCard, shareArea);
+  section.append(
+    list,
+    summaryLine,
+    budgetNotice,
+    loadNotice,
+    closingField,
+    facilitationCard,
+    shareArea,
+  );
   return section;
 }
 
@@ -2617,6 +2757,7 @@ function createSharedPlanSection() {
     }),
   );
   const list = node("ol", { className: "shared-plan-list" });
+  const phaseLabels = { warmup: "暖身", core: "核心", closing: "收尾" };
   for (const mission of sharedPlan.missions) {
     const item = node("li");
     const copy = node("div");
@@ -2624,6 +2765,12 @@ function createSharedPlanSection() {
       node("strong", { text: mission.title }),
       node("span", {
         text: `${mission.subject}・${mission.durationMinutes} 分鐘`,
+      }),
+      node("span", {
+        className: "shared-plan-rule",
+        text: `${phaseLabels[mission.phase]}・${
+          mission.assignmentRole === "choice" ? "任選一站" : "共同必走"
+        }`,
       }),
       node("p", { text: getMissionLearningOutcome(mission) }),
     );
@@ -2640,7 +2787,12 @@ function createSharedPlanSection() {
     );
     list.append(item);
   }
-  section.append(list);
+  const closing = node("aside", { className: "shared-plan-closing" });
+  closing.append(
+    node("strong", { text: "全班共同收束" }),
+    node("p", { text: sharedPlan.closingPrompt.label }),
+  );
+  section.append(list, closing);
   return section;
 }
 
@@ -3033,6 +3185,8 @@ function createRealmSection(home, activeRole, { filters = null } = {}) {
               teacherSelectedMissionIds = teacherSelectedMissionIds.filter(
                 (selectedId) => selectedId !== missionId,
               );
+              delete teacherAssignmentByMission[missionId];
+              delete teacherPhaseByMission[missionId];
               teacherPlanNotice = `已移除「${selected.title}」。`;
             } else if (teacherSelectedMissionIds.length >= 14) {
               teacherPlanNotice =
@@ -3042,6 +3196,8 @@ function createRealmSection(home, activeRole, { filters = null } = {}) {
                 ...teacherSelectedMissionIds,
                 missionId,
               ];
+              teacherAssignmentByMission[missionId] = "required";
+              teacherPhaseByMission[missionId] = "core";
               teacherPlanNotice = `已加入「${selected.title}」。`;
             }
             saveTeacherDraft();
@@ -3108,8 +3264,8 @@ function createProgressDock() {
     node("span", {
       className: "progress-dock__label",
       text: snapshot.nextRelic
-        ? `七燈 ${lights.litCount}／7・下一收藏差 ${snapshot.nextRelic.remainingXp}`
-        : `七燈 ${lights.litCount}／7・收藏全解鎖`,
+        ? `第 ${lights.currentBook} 冊 ${lights.litCount}／7・已完成 ${lights.completedBooks} 冊`
+        : `第 ${lights.currentBook} 冊 ${lights.litCount}／7・收藏全解鎖`,
     }),
   );
   toggle.addEventListener("click", () => {
@@ -3328,12 +3484,12 @@ function render() {
     if (healthyRest) main.append(healthyRest);
     main.append(
       createQuickStartPanel(home, mission),
-      createSupportNeedCard(),
       createStudentHero(
         home,
         mission,
         localState.student.visualPreference.focusMode,
       ),
+      createSupportNeedCard(),
       createRestorativeBanner(home, mission),
       createPassportSection(home),
       createLearningPathPanel(),

@@ -2854,6 +2854,14 @@ img {
   background: rgba(255, 251, 235, .94);
   box-shadow: 0 .75rem 2rem rgba(45, 35, 20, .08);
 }
+.quick-start-panel,
+.learning-path-panel,
+.healthy-rest-card,
+.storage-notice,
+.quick-start-panel h2,
+.learning-path-panel h2 {
+  color: #2a251c;
+}
 .quick-start-doors,
 .checkin-closure-actions,
 .healthy-rest-card > div,
@@ -2866,12 +2874,16 @@ img {
   gap: .65rem;
 }
 .quick-start-doors button,
+.quick-start-recommendation,
 .checkin-closure-actions button,
 .badge-paths button,
 .healthy-rest-card button,
 .teacher-plan-reorder button,
 .encouragement-feedback button {
   min-height: 44px;
+}
+.quick-start-recommendation {
+  margin-top: .65rem;
 }
 .primary-closure {
   background: #263b31;
@@ -2941,4 +2953,179 @@ img {
   .fourteen-day-path { grid-template-columns: repeat(2, minmax(0, 1fr)); }
   .quick-start-doors { display: grid; }
   .secondary-mission-link { margin: .5rem 0 0; }
+}
+
+/* 2026-07-29：四位專家 30 條建議的可操作介面 */
+.recommendation-outcome,
+.mission-learning-brief,
+.support-need-card,
+.strategy-carryover,
+.repeat-reflection,
+.parent-conversation-prompt,
+.local-metrics,
+.shared-plan-closing {
+  line-height: 1.65;
+}
+
+.mission-learning-brief {
+  display: grid;
+  gap: 6px;
+  margin-block: 14px;
+  padding: 16px;
+  border: 1px solid rgba(60, 165, 141, 0.34);
+  border-radius: 16px;
+  background: rgba(60, 165, 141, 0.09);
+}
+
+.mission-learning-brief p,
+.mission-reward-details {
+  margin: 0;
+}
+
+.mission-reward-details summary,
+.local-metrics summary {
+  min-height: 44px;
+  padding-block: 10px;
+  cursor: pointer;
+  font-weight: 800;
+}
+
+.support-need-card {
+  margin-top: 28px;
+  padding: clamp(20px, 4vw, 30px);
+  border: 1px solid rgba(139, 217, 199, 0.24);
+  border-radius: 24px;
+  background: rgba(255, 255, 255, 0.045);
+}
+
+.support-need-card h2 {
+  margin: 0;
+  font-family: ui-serif, "Noto Serif TC", serif;
+}
+
+.support-need-options,
+.teacher-mission-settings {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px;
+}
+
+.support-need-options button,
+.support-need-card > button {
+  min-height: 44px;
+}
+
+.support-need-preview {
+  margin: 14px 0;
+  padding: 14px;
+  border-inline-start: 4px solid #8bd9c7;
+  border-radius: 8px;
+  color: #f7f0dc;
+  background: rgba(60, 165, 141, 0.11);
+}
+
+.strategy-carryover,
+.repeat-reflection {
+  margin-block: 10px;
+  padding: 12px;
+  border-radius: 12px;
+  color: #42384a;
+  background: rgba(255, 248, 232, 0.62);
+}
+
+.strategy-carryover > div {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+
+.parent-conversation-prompt,
+.shared-plan-closing {
+  margin-block: 16px;
+  padding: 16px;
+  border: 1px solid rgba(139, 217, 199, 0.28);
+  border-radius: 14px;
+  color: #ded8e4;
+  background: rgba(60, 165, 141, 0.08);
+}
+
+.parent-conversation-prompt p,
+.shared-plan-closing p {
+  margin: 6px 0 0;
+}
+
+.local-metrics {
+  margin-block: 18px;
+  padding: 14px;
+  border: 1px solid rgba(255, 248, 232, 0.14);
+  border-radius: 14px;
+}
+
+.local-metrics ul {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(170px, 1fr));
+  gap: 8px;
+  padding: 0;
+  list-style: none;
+}
+
+.local-metrics li,
+.shared-plan-rule {
+  padding: 8px 10px;
+  border-radius: 10px;
+  color: #ded8e4;
+  background: rgba(255, 255, 255, 0.06);
+}
+
+.teacher-mission-settings label,
+.teacher-closing-prompt {
+  display: grid;
+  gap: 6px;
+  color: #ded8e4;
+  font-size: 0.82rem;
+  font-weight: 800;
+}
+
+.teacher-mission-settings select,
+.teacher-closing-prompt select {
+  min-height: 44px;
+}
+
+.teacher-load-guidance,
+.teacher-closing-prompt {
+  margin-block: 14px;
+  padding: 12px;
+  border-radius: 12px;
+  background: rgba(60, 165, 141, 0.1);
+}
+
+.teacher-load-guidance--over {
+  border-inline-start: 4px solid #d98b5f;
+  background: rgba(217, 139, 95, 0.1);
+}
+
+.relic-card__meaning {
+  padding: 9px;
+  border-radius: 9px;
+  color: #483f4c;
+  background: rgba(60, 165, 141, 0.12);
+  font-weight: 700;
+}
+
+@media (max-width: 700px) {
+  .support-need-card {
+    padding: 18px 16px;
+  }
+
+  .support-need-options,
+  .teacher-mission-settings {
+    display: grid;
+  }
+
+  .support-need-options button,
+  .support-need-card > button,
+  .teacher-mission-settings label,
+  .teacher-closing-prompt {
+    width: 100%;
+  }
 }

@@ -194,11 +194,13 @@ test("本機量測只提供健康循環彙整，不計排名或總時數 KPI", (
     { type: "mission_started" },
     { type: "mission_returned" },
     { type: "strategy_selected" },
-    { type: "rest_suggested", context: { outcome: "complete" } },
+    { type: "rest_suggested", context: { outcome: null } },
+    { type: "rest_adopted", context: { outcome: "complete" } },
   ]);
   assert.equal(metrics.returnRate, 50);
   assert.equal(metrics.strategySelections, 1);
   assert.equal(metrics.restSuggestions, 1);
+  assert.equal(metrics.restAccepted, 1);
   assert.equal("ranking" in metrics, false);
   assert.equal("totalMinutes" in metrics, false);
 });

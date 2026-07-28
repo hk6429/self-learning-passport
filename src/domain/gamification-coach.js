@@ -279,11 +279,18 @@ export function buildLocalMetrics(events = []) {
   const count = (type) => events.filter((event) => event?.type === type).length;
   const starts = count("mission_started");
   const returns = count("mission_returned");
+  const restSuggestions = count("rest_suggested");
+  const restAccepted = count("rest_adopted");
   return {
     localOnly: true,
     returnRate: starts === 0 ? 0 : Math.round((returns / starts) * 100),
     strategySelections: count("strategy_selected"),
-    restSuggestions: count("rest_suggested"),
+    restSuggestions,
+    restAccepted,
+    restAcceptanceRate:
+      restSuggestions === 0
+        ? 0
+        : Math.min(100, Math.round((restAccepted / restSuggestions) * 100)),
     missionReports: count("mission_reported"),
   };
 }
