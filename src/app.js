@@ -3841,6 +3841,7 @@ function createProgressDock() {
     attributes: {
       type: "button",
       "aria-expanded": "false",
+      "aria-controls": "progress-dock-targets",
       "aria-label": `展開七燈進度，目前點亮 ${lights.litCount} 盞`,
     },
   });
@@ -3869,7 +3870,10 @@ function createProgressDock() {
   });
   const targets = node("nav", {
     className: "progress-dock__targets",
-    attributes: { "aria-label": "三層成長目標" },
+    attributes: {
+      id: "progress-dock-targets",
+      "aria-label": "三層成長目標",
+    },
   });
   for (const [href, label] of [
     ["#daily-mission-title", "今天：目前任務"],
@@ -4185,6 +4189,11 @@ document.addEventListener("keydown", (event) => {
   if (!dock || dock.dataset.expanded !== "true") return;
   dock.dataset.expanded = "false";
   toggle?.setAttribute("aria-expanded", "false");
+  const litCount = toggle?.querySelector(".lamp-count")?.textContent ?? "0";
+  toggle?.setAttribute(
+    "aria-label",
+    `展開七燈進度，目前點亮 ${litCount} 盞`,
+  );
   toggle?.focus();
   scheduleProgressDockSafety();
 });

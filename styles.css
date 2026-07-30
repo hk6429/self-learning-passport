@@ -2422,6 +2422,7 @@ img {
   max-width: calc(100vw - 36px);
   overflow: hidden;
   transition:
+    border-radius 180ms ease,
     opacity 160ms ease,
     transform 160ms ease,
     width 180ms ease;
@@ -2429,6 +2430,7 @@ img {
 
 .progress-dock[data-expanded="true"] {
   width: 315px;
+  border-radius: 22px;
 }
 
 .progress-dock[data-safe="hidden"] {
@@ -2443,6 +2445,7 @@ img {
 
 .progress-dock__toggle {
   display: flex;
+  width: 100%;
   align-items: center;
   gap: 12px;
   min-height: 56px;
@@ -2452,12 +2455,28 @@ img {
   color: inherit;
   background: transparent;
   cursor: pointer;
-  width: 313px;
+  text-align: left;
+}
+
+.progress-dock:not([data-expanded="true"]) .progress-dock__toggle {
+  justify-content: center;
+  padding: 8px;
+}
+
+.progress-dock:not([data-expanded="true"]) .progress-dock__label {
+  display: none;
+}
+
+.progress-dock[data-expanded="true"] .progress-dock__toggle {
+  border-bottom: 1px solid rgba(243, 183, 67, 0.18);
+  border-radius: 21px 21px 0 0;
+  background: rgba(243, 183, 67, 0.07);
 }
 
 .lamp-count {
   display: grid;
   width: 38px;
+  flex: 0 0 38px;
   aspect-ratio: 1;
   place-items: center;
   border-radius: 50%;
@@ -2467,7 +2486,11 @@ img {
 }
 
 .progress-dock__label {
+  min-width: 0;
+  color: var(--mist);
   font-size: 0.82rem;
+  font-weight: 800;
+  line-height: 1.35;
 }
 
 .role-notice {
@@ -3063,7 +3086,7 @@ img {
   }
 
   .progress-dock__toggle {
-    width: 223px;
+    width: 100%;
     min-height: 54px;
     padding: 7px 13px 7px 8px;
   }
@@ -3273,13 +3296,34 @@ img {
 .teacher-budget-status--over { border-inline-start: 4px solid #a85b35; }
 .progress-dock__targets {
   display: none;
-  gap: .35rem;
-  padding: .5rem;
+  gap: 6px;
+  padding: 8px 10px 10px;
 }
 .progress-dock[data-expanded="true"] .progress-dock__targets {
   display: grid;
 }
-.progress-dock__targets button { text-align: start; }
+.progress-dock__targets button {
+  min-height: 42px;
+  padding: 8px 10px;
+  border: 1px solid rgba(243, 183, 67, 0.18);
+  border-radius: 11px;
+  color: var(--mist);
+  background: rgba(255, 255, 255, 0.055);
+  cursor: pointer;
+  font: inherit;
+  font-size: 0.78rem;
+  font-weight: 750;
+  line-height: 1.35;
+  text-align: start;
+}
+.progress-dock__targets button:hover {
+  border-color: rgba(243, 183, 67, 0.42);
+  background: rgba(243, 183, 67, 0.11);
+}
+.progress-dock__targets button:focus-visible {
+  outline: 3px solid rgba(243, 183, 67, 0.5);
+  outline-offset: -3px;
+}
 .checkin-feedback--closed .checkin-mystery,
 .checkin-feedback--closed .checkin-next-target,
 .checkin-feedback--closed .checkin-closure-actions { display: none; }
