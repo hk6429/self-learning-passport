@@ -2418,10 +2418,17 @@ img {
   background: rgba(21, 21, 43, 0.88);
   box-shadow: 0 14px 32px rgba(5, 5, 20, 0.34);
   backdrop-filter: blur(18px);
+  width: 56px;
+  max-width: calc(100vw - 36px);
+  overflow: hidden;
   transition:
     opacity 160ms ease,
     transform 160ms ease,
     width 180ms ease;
+}
+
+.progress-dock[data-expanded="true"] {
+  width: 315px;
 }
 
 .progress-dock[data-safe="hidden"] {
@@ -2445,6 +2452,7 @@ img {
   color: inherit;
   background: transparent;
   cursor: pointer;
+  width: 313px;
 }
 
 .lamp-count {

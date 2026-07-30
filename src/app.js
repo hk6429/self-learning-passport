@@ -3841,7 +3841,7 @@ function createProgressDock() {
     attributes: {
       type: "button",
       "aria-expanded": "false",
-      "aria-label": `查看七燈進度，目前點亮 ${lights.litCount} 盞`,
+      "aria-label": `展開七燈進度，目前點亮 ${lights.litCount} 盞`,
     },
   });
   toggle.append(
@@ -3861,6 +3861,10 @@ function createProgressDock() {
     const expanded = dock.dataset.expanded !== "true";
     dock.dataset.expanded = String(expanded);
     toggle.setAttribute("aria-expanded", String(expanded));
+    toggle.setAttribute(
+      "aria-label",
+      `${expanded ? "收合" : "展開"}七燈進度，目前點亮 ${lights.litCount} 盞`,
+    );
     scheduleProgressDockSafety();
   });
   const targets = node("nav", {

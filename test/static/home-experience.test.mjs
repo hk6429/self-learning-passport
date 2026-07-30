@@ -132,6 +132,9 @@ test("回訪身份選擇與七燈計數器可收合，首訪提供白話詞語�
   assert.match(styles, /\.role-summary/);
   assert.match(styles, /\.world-guide/);
   assert.match(styles, /\.progress-dock\[data-expanded="true"\]/);
+  assert.match(styles, /\.progress-dock\s*\{[\s\S]*width:\s*56px;[\s\S]*overflow:\s*hidden/);
+  assert.match(styles, /\.progress-dock\[data-expanded="true"\]\s*\{[\s\S]*width:\s*315px/);
+  assert.match(app, /\$\{expanded \? "收合" : "展開"\}七燈進度/);
   assert.match(styles, /\.realm-card__route-options\s*\{\s*grid-template-columns:\s*1fr/);
 });
 
