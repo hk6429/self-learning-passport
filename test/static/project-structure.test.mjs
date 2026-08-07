@@ -48,3 +48,13 @@ test("專案指令可重跑且不提交機密或工具產物", async () => {
   assert.match(gitignore, /^\.wrangler\/$/m);
   assert.match(gitignore, /^test-results\/$/m);
 });
+
+test("隨站散布的 QR Code Generator 保留完整 MIT 授權", async () => {
+  const license = await readProjectFile("src/vendor/qrcode.LICENSE.txt");
+
+  assert.match(license, /Copyright \(c\) 2009 Kazuhiko Arase/);
+  assert.match(
+    license,
+    /The above copyright notice and this permission notice shall be included/,
+  );
+});
